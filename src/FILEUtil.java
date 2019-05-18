@@ -78,6 +78,7 @@ public final class FILEUtil {
 	}
 	
 	public FILEUtil(byte[][] incData) {
+		FBreak = incData;
 		int totalSize; //Total size of incoming Data
 		
 		if(incData.length > 1) {
@@ -123,4 +124,9 @@ public final class FILEUtil {
 			System.exit(1);
 		}
 	}
+	
+	public static void main(String[] args) {
+		
+	}
+	
 }
