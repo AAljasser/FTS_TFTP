@@ -8,28 +8,31 @@ public class ACKPacket extends Packet{
 
 	public ACKPacket(int blockNumber) {
 		this.blockNumber = new BlockNum(blockNumber);
+		this.setID(new byte[] {0,4});
 		this.setPacket(constructPacket());
 	}
 	
 	public ACKPacket(byte[] packet) {
 		this.setPacket(packet);
-		blockNumber = extractBlockNumber(packet);		
+		blockNumber = extractBlockNumber(packet);	
+		this.setID(extractID(packet));
 	}
 	
-	
-
 	public BlockNum getBlockNumber() {
 		return blockNumber;
 	}
+	public int getIntBN() {
+		return blockNumber.getInt();
+	}
+	
+	public byte[] getBytesBN() {
+		return blockNumber.getByte();				
+	}
 	
 	public byte[] constructPacket() {
-		byte[] id = new byte[2];
-		byte[] bNumberArray = blockNumber.getByte();
-		
-		id[0] = 0;
-		id[1] = 4;
+		byte[] bNumberArray = blockNumber.getByte();		
 	
-		return ArrayUtil.makeSimpleArray(id, bNumberArray);
+		return ArrayUtil.makeSimpleArray(getID(), bNumberArray);
 	}
 	
 	private BlockNum extractBlockNumber(byte[] packet) {
@@ -37,4 +40,10 @@ public class ACKPacket extends Packet{
 		
 		return new BlockNum(blockNumberArray);
 	}
+	
+	private byte[] extractID(byte[] packet) {
+		return ArrayUtil.subArray(packet, 0, 2);
+	}
+	
+	
 }

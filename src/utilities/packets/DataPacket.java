@@ -10,6 +10,7 @@ public class DataPacket extends Packet{
 	public DataPacket(int blockNumber, byte[] data) {
 		this.blockNumber = new BlockNum(blockNumber);
 		this.data = data;
+		this.setID(new byte[] {0,3});
 		this.setPacket(constructPacket());
 	}
 	
@@ -17,23 +18,28 @@ public class DataPacket extends Packet{
 		this.setPacket(packet);
 		blockNumber = extractBlockNumber(packet);
 		data = extractData(packet);
+		this.setID(extractID(packet));
 	}
 
 	public BlockNum getBlockNumber() {
 		return blockNumber;
+	}
+	public int getIntBN() {
+		return blockNumber.getInt();
+	}
+	
+	public byte[] getBytesBN() {
+		return blockNumber.getByte();				
 	}
 
 	public byte[] getData() {
 		return data;
 	}
 
-	public byte[] constructPacket() {
-		byte[] id = new byte[2];
-		byte[] bNumberArray = blockNumber.getByte();
-		id[0] = 0;
-		id[1] = 3;
+	public byte[] constructPacket() {		
+		byte[] bNumberArray = blockNumber.getByte();		
 		
-		return ArrayUtil.makeSimpleArray(id, bNumberArray, data);
+		return ArrayUtil.makeSimpleArray(getID(), bNumberArray, data);
 	}
 	
 	private BlockNum extractBlockNumber(byte[] packet) {
@@ -46,5 +52,9 @@ public class DataPacket extends Packet{
 		byte[] dataArray = ArrayUtil.subArray(packet, 4, packet.length);
 		
 		return dataArray;
+	}
+	
+	private byte[] extractID(byte[] packet) {
+		return ArrayUtil.subArray(packet, 0, 2);
 	}
 }

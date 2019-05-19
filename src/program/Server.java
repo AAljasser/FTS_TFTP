@@ -1,6 +1,7 @@
 package program;
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
 import java.lang.Thread;
 import utilities.*;
 import utilities.packets.*;
@@ -15,6 +16,7 @@ public class Server implements Runnable {
 	private int rType = 0; // 0 - Server, 1 - WR, 2 - RR
 	private String rFN;
 	private String rM;
+	private String dir = "C:\\Users\\AyeJay\\Desktop\\files\\save\\";
 	//*** TEMP
 	private DatagramSocket ServerSocket = null;
 	
@@ -58,7 +60,7 @@ public class Server implements Runnable {
 				System.exit(1);
 			}
 		
-			printPackageInfo(ClientPacket, false);
+			//printPackageInfo(ClientPacket, false);
 			
 			int rInd1 = (int) rawData[0];
 			int rInd2 = (int) rawData[1];
@@ -99,10 +101,11 @@ public class Server implements Runnable {
 			
 			while (run == 1) {
 				System.out.println("Working on Data# "+blockCounter);
-				System.out.println(this.ClientAddress.toString() + "" +this.ClientPort);
+				
 				dataTrans = new ACKPacket(blockCounter);
 				dataTrans.setDatagramPacket(this.ClientAddress, this.ClientPort);
 				this.ClientPacket = dataTrans.getDatagramPacket();
+				//printPackageInfo(this.ClientPacket, false);
 				try {
 					System.out.println("SENDING... ");
 					this.ServerSocket.send(this.ClientPacket);
@@ -110,6 +113,7 @@ public class Server implements Runnable {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				//System.out.println(this.ClientAddress.toString() + "" +this.ClientPacket.getPort());
 				blockCounter++;
 				this.rawData = new byte[512];
 				this.ClientPacket = new DatagramPacket(this.rawData, this.rawData.length);
@@ -133,12 +137,16 @@ public class Server implements Runnable {
 				
 				
 			}
+			tempData = Arrays.copyOfRange(tempData, 0, blockCounter);
+			FILEUtil save = new FILEUtil(tempData);
+			save.saveFile(dir+this.rFN);
+			
 		}
 	}
 	
 
 	public static void main(String[] args) {
-		Server run = new Server(60300);
+		Server run = new Server(69);
 		run.Start();
 
 	}
