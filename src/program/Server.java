@@ -1,6 +1,10 @@
+package program;
 import java.io.*;
 import java.net.*;
 import java.lang.Thread;
+import utilities.*;
+import utilities.packets.*;
+
 
 public class Server implements Runnable {
 	private InetAddress ClientAddress = null;
@@ -9,6 +13,8 @@ public class Server implements Runnable {
 	private byte rawData[] = new byte[512];
 	private int threadCounter = 0;
 	private int rType = 0; // 0 - Server, 1 - WR, 2 - RR
+	private String rFN;
+	private String rM;
 	//*** TEMP
 	private DatagramSocket ServerSocket = null;
 	
@@ -23,11 +29,14 @@ public class Server implements Runnable {
 		}
 	}
 	public Server(DatagramPacket CP, int t,byte[] rd) {
+		RequestPacket temp = new RequestPacket(rd);
 		this.ClientPacket = CP;
 		this.ClientAddress = CP.getAddress();
 		this.ClientPort = CP.getPort();
 		this.rType = t;
 		this.rawData = rd;
+		this.rFN = temp.getFilename();
+		this.rM = temp.getMode();
 	}
 	public void Start() {
 		Thread clientPro = null;
@@ -70,42 +79,69 @@ public class Server implements Runnable {
 			
 			
 			
+			
 		
 		}
 	}
 	public void run() {
-		System.out.println("At thread");
-		try {
-			this.ServerSocket = new DatagramSocket();
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		byte[] b = new byte[4];
-		b[0] = 0b00000000;
-		b[1] = 0b00000001;
-		b[2] = 0b00000000;
-		b[3] = 0b00000000;
-		
-		this.ClientPacket = new DatagramPacket(b,b.length,this.ClientAddress,this.ClientPort);
-		try {
-			ServerSocket.send(this.ClientPacket);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		ACKPacket dataTrans = null;
+		DataPacket dataPack = null;
+		byte[][] tempData = new byte[512][508];;
+		int run = 1;
+		int blockCounter = 0;
+		if(rType == 2) { //Write Request
+			try {
+				this.ServerSocket = new DatagramSocket();
+			} catch (SocketException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			while (run == 1) {
+				System.out.println("Working on Data# "+blockCounter);
+				System.out.println(this.ClientAddress.toString() + "" +this.ClientPort);
+				dataTrans = new ACKPacket(blockCounter);
+				dataTrans.setDatagramPacket(this.ClientAddress, this.ClientPort);
+				this.ClientPacket = dataTrans.getDatagramPacket();
+				try {
+					System.out.println("SENDING... ");
+					this.ServerSocket.send(this.ClientPacket);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				blockCounter++;
+				this.rawData = new byte[512];
+				this.ClientPacket = new DatagramPacket(this.rawData, this.rawData.length);
+				try {
+					this.ServerSocket.receive(this.ClientPacket);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				dataPack = new DataPacket(this.ClientPacket.getData());
+				
+				if(this.ClientPacket.getLength()<512) {
+					run = -1;
+				}
+				
+				tempData[blockCounter-1] = dataPack.getData();
+				
+				System.out.println(this.ClientPacket.getLength());
+				
+				dataPack = new DataPacket(this.ClientPacket.getData());
+				
+				
+			}
 		}
 	}
 	
 
 	public static void main(String[] args) {
-		Server run = new Server(69);
+		Server run = new Server(60300);
 		run.Start();
 
 	}
-	
-	
-	
-	
 	public static void printPackageInfo(DatagramPacket datagram, boolean sent) {
 
 
@@ -136,6 +172,4 @@ public class Server implements Runnable {
 		System.out.println(stringData);
 		System.out.println("");
 	}
-	
-
 }

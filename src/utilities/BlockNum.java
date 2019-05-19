@@ -6,6 +6,7 @@
  * 	BlockNum(int) --> Turns int to 2 byte array
  * 	BlockNum(byte[]) --> Turns 2 byte array to int
  */
+package utilities;
 
 public class BlockNum {
 	static byte[] byteValue;
