@@ -86,19 +86,22 @@ public class Server implements Runnable {
 		}
 	}
 	public void run() {
+		FILEUtil loadedFile = null;
 		ACKPacket dataTrans = null;
 		DataPacket dataPack = null;
-		byte[][] tempData = new byte[512][508];;
+		ErrorPacket E = null;
+		byte[][] tempData = null;
 		int run = 1;
 		int blockCounter = 0;
+		this.rawData = new byte[512];
+		try {
+			this.ServerSocket = new DatagramSocket();
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if(rType == 2) { //Write Request
-			try {
-				this.ServerSocket = new DatagramSocket();
-			} catch (SocketException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+			tempData = new byte[512][508];
 			while (run == 1) {
 				System.out.println("Working on Data# "+blockCounter);
 				
@@ -115,7 +118,7 @@ public class Server implements Runnable {
 				}
 				//System.out.println(this.ClientAddress.toString() + "" +this.ClientPacket.getPort());
 				blockCounter++;
-				this.rawData = new byte[512];
+				
 				this.ClientPacket = new DatagramPacket(this.rawData, this.rawData.length);
 				try {
 					this.ServerSocket.receive(this.ClientPacket);
@@ -138,8 +141,63 @@ public class Server implements Runnable {
 				
 			}
 			tempData = Arrays.copyOfRange(tempData, 0, blockCounter);
-			FILEUtil save = new FILEUtil(tempData);
-			save.saveFile(dir+this.rFN);
+			loadedFile = new FILEUtil(tempData);
+			loadedFile.saveFile(dir+this.rFN);
+			
+		} else if (rType == 1) {
+			try {
+			loadedFile = new FILEUtil(dir+this.rFN);
+			} catch(FileNotFoundException e) {
+				//TESTING IF FILE EXISITS
+				System.out.println("File not found, Responding ERROR...");
+				E = new ErrorPacket(404, "File could not be found!");
+				E.setDatagramPacket(this.ClientAddress, this.ClientPort);
+				try {
+					this.ServerSocket.send(E.getDatagramPacket());
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				e.printStackTrace();
+			}
+			
+			tempData = loadedFile.getData();
+			
+			while(blockCounter < tempData.length) {
+				dataPack = new DataPacket(blockCounter, tempData[blockCounter]);
+				dataPack.setDatagramPacket(this.ClientAddress, this.ClientPort);
+				try {
+					this.ServerSocket.send(dataPack.getDatagramPacket());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				DatagramPacket ack = TFTPUtil.datagramPacket(4);
+				dataTrans = new ACKPacket(rawData);
+				try {
+					this.ServerSocket.receive(ack);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				dataTrans = new ACKPacket(ack.getData());
+				
+				if(dataTrans.getIntBN() == blockCounter) {
+					blockCounter++;
+				} else {
+					E = new ErrorPacket(409, "Conflict Error: Block number mismaatching!");
+					E.setDatagramPacket(this.ClientAddress, this.ClientPort);
+					try {
+						this.ServerSocket.send(E.getDatagramPacket());
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+				
+			}
+			
 			
 		}
 	}

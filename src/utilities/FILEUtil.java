@@ -31,9 +31,9 @@ public final class FILEUtil {
 	private byte[] sData;
 	private int length; //Number of 508 Byte array's
 	
-	public FILEUtil(String fileDIR) {
+	public FILEUtil(String fileDIR) throws FileNotFoundException {
 		this.loadedFile = new File(fileDIR);  
-		length = (int) Math.ceil((double)this.loadedFile.length()/508); //Break down on of the file in 508 packets
+		length = (int) Math.ceil((double)this.loadedFile.length()/MAX_SIZE); //Break down on of the file in 508 packets
 		byte[] fByte = new byte[(int) this.loadedFile.length()];
 		FileInputStream fStream = null;
 		
@@ -60,7 +60,7 @@ public final class FILEUtil {
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found, exiting...");
 			e.printStackTrace();
-			System.exit(1);
+			throw e;
 		} catch (IOException e) {
 			System.out.println("IOException, exiting...");
 			e.printStackTrace();
@@ -83,7 +83,7 @@ public final class FILEUtil {
 		int totalSize; //Total size of incoming Data
 		
 		if(incData.length > 1) {
-			totalSize = ((incData.length - 1) * 508) + incData[incData.length-1].length; //Total size of incoming Data
+			totalSize = ((incData.length - 1) * MAX_SIZE) + incData[incData.length-1].length; //Total size of incoming Data
 		} else {
 			totalSize = incData.length;
 		}
