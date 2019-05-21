@@ -164,7 +164,9 @@ public class Server implements Runnable {
 			tempData = loadedFile.getData();
 			
 			while(blockCounter < tempData.length) {
+				
 				dataPack = new DataPacket(blockCounter, tempData[blockCounter]);
+				System.out.println(tempData[blockCounter].length);
 				dataPack.setDatagramPacket(this.ClientAddress, this.ClientPort);
 				try {
 					this.ServerSocket.send(dataPack.getDatagramPacket());

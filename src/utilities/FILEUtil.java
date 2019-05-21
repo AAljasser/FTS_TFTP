@@ -53,8 +53,8 @@ public final class FILEUtil {
 				this.FBreak[length -1] = Arrays.copyOfRange(fByte, (i*MAX_SIZE),fByte.length);
 			} else {
 				this.FBreak = new byte[1][];
-				this.FBreak[0] = new byte[(int) (this.loadedFile.length()%MAX_SIZE)];
-				this.FBreak[0] = Arrays.copyOf(fByte, 0);
+				this.FBreak[0] = fByte;
+				System.out.println(this.FBreak[0].length);
 			}
 			
 		} catch (FileNotFoundException e) {
@@ -85,7 +85,7 @@ public final class FILEUtil {
 		if(incData.length > 1) {
 			totalSize = ((incData.length - 1) * MAX_SIZE) + incData[incData.length-1].length; //Total size of incoming Data
 		} else {
-			totalSize = incData.length;
+			totalSize = incData[0].length;
 		}
 		sData = new byte[totalSize];
 		for(int i=0,x=0; i < incData.length;i++) {
