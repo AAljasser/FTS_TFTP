@@ -2,7 +2,11 @@ package program;
 import java.io.*;
 import java.net.*;
 import java.util.Arrays;
-import java.lang.Thread;
+
+import javax.swing.JOptionPane;
+
+import java.util.*;
+import java.lang.*;
 import utilities.*;
 import utilities.packets.*;
 
@@ -16,9 +20,12 @@ public class Server implements Runnable {
 	private int rType = 0; // 0 - Server, 1 - WR, 2 - RR
 	private String rFN;
 	private String rM;
-	private String dir = "C:\\Users\\AyeJay\\Desktop\\files\\save\\";
+	private String dir = "C:\\Users\\AyeJay\\Desktop\\files\\server\\";
 	//*** TEMP
 	private DatagramSocket ServerSocket = null;
+	Thread closure;
+	Map<Integer, Thread> clientsT = new HashMap<Integer, Thread>();
+	Thread clientT;
 	
 	
 	public Server(int port) {
@@ -66,13 +73,15 @@ public class Server implements Runnable {
 			int rInd2 = (int) rawData[1];
 			
 			if(rInd1 == 0 && rInd2 == 1) {
-				Thread clientT = new Thread(new Server(ClientPacket,1,rawData),"Thread #"+threadCounter);
+				clientT = new Thread(new Server(ClientPacket,1,rawData),"Thread #"+threadCounter);
 				System.out.println("Thread #"+threadCounter+" Created");
+				clientsT.put(threadCounter, clientT);
 				threadCounter++;
 				clientT.start();
 			} else if (rInd1 == 0 && rInd2 == 2) {
-				Thread clientT = new Thread(new Server(ClientPacket,2,rawData),"Thread #"+threadCounter);
+				clientT = new Thread(new Server(ClientPacket,2,rawData),"Thread #"+threadCounter);
 				System.out.println("Thread #"+threadCounter+" Created");
+				clientsT.put(threadCounter, clientT);
 				threadCounter++;
 				clientT.start();
 			} else {
@@ -85,7 +94,68 @@ public class Server implements Runnable {
 		
 		}
 	}
-	public void run() {
+	public void run() {	
+		if(rType == 0) {
+			Thread clientPro = null;
+			if(this.ServerSocket == null) {
+				System.out.println("Server socket isn't created, exiting...");
+				System.exit(1);
+			}
+			
+			//Creating Datagram (**TEMP**)
+			while(true) {
+				if(Thread.interrupted()) {
+					System.out.println("Waiting all working thread are done...");
+					boolean xx = true;
+					Integer counter = 0;
+					while(xx) {
+						if(clientsT.get(counter) != null) {
+							System.out.println("here");
+							if(clientsT.get(counter).isAlive() == false) {
+								counter++;
+							} else {
+								System.out.println("Thread #" + counter+" Still working.");
+							}
+						} else {
+							System.out.println("All threads are done, exiting...");
+							xx=false;
+						}
+					}
+					break;
+				}
+				ClientPacket = new DatagramPacket(rawData, 0, rawData.length);
+				
+				System.out.println("Server listening at port " + this.ServerSocket.getLocalPort()+ " ...");
+				try {
+					this.ServerSocket.receive(ClientPacket);
+				} catch (IOException e) {
+					System.out.println("IOException at Socket.receive, exiting...");
+					e.printStackTrace();
+					System.exit(1);
+				}
+			
+				//printPackageInfo(ClientPacket, false);
+				
+				int rInd1 = (int) rawData[0];
+				int rInd2 = (int) rawData[1];
+				
+				if(rInd1 == 0 && rInd2 == 1) {
+					clientT = new Thread(new Server(ClientPacket,1,rawData),"Thread #"+threadCounter);
+					System.out.println("Thread #"+threadCounter+" Created");
+					clientsT.put(threadCounter, clientT);
+					threadCounter++;
+					clientT.start();
+				} else if (rInd1 == 0 && rInd2 == 2) {
+					clientT = new Thread(new Server(ClientPacket,2,rawData),"Thread #"+threadCounter);
+					System.out.println("Thread #"+threadCounter+" Created");
+					clientsT.put(threadCounter, clientT);
+					threadCounter++;
+					clientT.start();
+				} else {
+					System.out.println("Invalid request, skiping...");
+				}	
+			}
+		} else {
 		FILEUtil loadedFile = null;
 		ACKPacket dataTrans = null;
 		DataPacket dataPack = null;
@@ -203,13 +273,23 @@ public class Server implements Runnable {
 			
 			
 		}
+		}
 	}
 	
 
 	public static void main(String[] args) {
-		Server run = new Server(69);
-		run.Start();
-
+		Thread listener = new Thread(new Server(69),"Listener");
+		listener.start();
+		
+		
+	    String s = JOptionPane.showInputDialog("Shutdown server? Type 'quit':").toLowerCase();
+	    
+	    System.out.println("TO EXIT, type 'quit'");
+		
+	    if("quit".equals(s)) {
+	    	    System.out.println("TO EXIT, type 'quit'");
+	        	listener.interrupt();
+	    }
 	}
 	public static void printPackageInfo(DatagramPacket datagram, boolean sent) {
 
