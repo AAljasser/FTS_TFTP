@@ -146,7 +146,7 @@ public class Server implements Runnable {
 			
 		} else if (rType == 1) {
 			try {
-			loadedFile = new FILEUtil(dir+this.rFN);
+				loadedFile = new FILEUtil(dir+this.rFN);
 			} catch(FileNotFoundException e) {
 				//TESTING IF FILE EXISITS
 				System.out.println("File not found, Responding ERROR...");
@@ -159,6 +159,7 @@ public class Server implements Runnable {
 					e1.printStackTrace();
 				}
 				e.printStackTrace();
+				System.exit(1);
 			}
 			
 			tempData = loadedFile.getData();

@@ -46,11 +46,11 @@ public class Client {
 
 	public void sendReceive() {
 		// creates a request Object with the type of request entered by the user
-		Request request = createRequest(JOptionPane.showInputDialog("File transfer operation(Write or Read):"));
+		Request request =createRequest(JOptionPane.showInputDialog("File transfer operation(Write or Read):"));
 		// saves the filename that the user enters
 		String filename = JOptionPane.showInputDialog("Enter the file name :");
 		// saves the mode that the user enters.
-		String mode = JOptionPane.showInputDialog("Enter the mode :").toLowerCase();
+		String mode =JOptionPane.showInputDialog("Enter the mode :").toLowerCase();
 		// creates a requestPacket
 		RequestPacket RPacket = new RequestPacket(request, filename, mode);
 
@@ -141,8 +141,9 @@ public class Client {
 	
 	public void readFile(RequestPacket rp) {
 		boolean is512 = true;
-		byte[][] data = new byte[512][508];
-		int counter =0;
+		byte[][] data = new byte[0][];
+		//byte[][] data = new byte[512][508];
+		//int counter =0;
 		
 		while(is512) {
 			DatagramPacket dgp = TFTPUtil.datagramPacket(MAX_CAPACITY);
@@ -151,9 +152,10 @@ public class Client {
 			
 			DataPacket dataPacket = new DataPacket(dgp.getData());
 			
-			data[counter] = Arrays.copyOfRange(dgp.getData(),4,dgp.getLength());
-			System.out.println(dgp.getLength());
-			counter++;
+			data = ArrayUtil.pushBidimensional(data, dgp.getData());
+			//data[counter] = Arrays.copyOfRange(dgp.getData(),4,dgp.getLength());
+			//System.out.println(dgp.getLength());
+			//counter++;
 			
 			ACKPacket ack = new ACKPacket(dataPacket.getIntBN());
 			
@@ -166,10 +168,10 @@ public class Client {
 				System.out.println("FINISHED Reading...");
 			}
 		}
-		data = Arrays.copyOfRange(data, 0, counter);
+		//data = Arrays.copyOfRange(data, 0, counter);
 		FILEUtil file = new FILEUtil(data);
-		System.out.println(rp.getFilename());
-		file.saveFile(PATH+rp.getFilename());
+		//System.out.println(rp.getFilename());
+		file.saveFile(PATH + rp.getFilename());
 		
 	}
 	

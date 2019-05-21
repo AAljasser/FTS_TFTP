@@ -6,9 +6,13 @@ public class ArrayUtil {
 	private ArrayUtil(){}
 	
 	//Method to break an array into subArrays
-	public static byte[][] makeBidimensional(byte[] original, int subLength) {
+	//if addzero is true, it add an array of size zero at the end of the array when the  size of original is modulo of sublength
+	//i.e it adds an array of size 0 when the file size is 508;
+	public static byte[][] makeBidimensional(byte[] original, int subLength, boolean addZero) {
 
-		int mainArrayLength = (int) Math.ceil((double) original.length / subLength);
+		int auxLength = (int) Math.ceil((double) original.length / subLength);
+		
+		int mainArrayLength = (addZero && original.length % subLength == 0) ? auxLength + 1 : auxLength;
 
 		byte[][] mainArray = new byte[mainArrayLength][];
 
@@ -22,11 +26,8 @@ public class ArrayUtil {
 
 				toIndex += remainder;
 
-				//mainArray[i] = new byte[remainder];
-
 				mainArray[i] = Arrays.copyOfRange(original, fromIndex, toIndex);
-			} else {
-				mainArray[i] = new byte[subLength];
+			} else {			
 
 				toIndex += subLength;
 
@@ -62,11 +63,15 @@ public class ArrayUtil {
 	public static byte[][] pushBidimensional(byte[][] container, byte[] subArray){
 		byte[][] array = new byte[container.length + 1][];
 		
-		for(int i = 0; i < array.length; i++) {
-			if(i == array.length - 1) array[i] = subArray;
-			
-			else array[i] = container[i];
-		}
+		System.arraycopy(container, 0, array, 0, container.length);
+		array[array.length - 1] = subArray;
+		
+		/*
+		 * for(int i = 0; i < array.length; i++) { if(i == array.length - 1) array[i] =
+		 * subArray;
+		 * 
+		 * else array[i] = container[i]; }
+		 */
 		
 		return array;
 	}

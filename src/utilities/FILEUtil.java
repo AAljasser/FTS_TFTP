@@ -37,8 +37,10 @@ public final class FILEUtil {
 		byte[] fByte = new byte[(int) this.loadedFile.length()];
 		FileInputStream fStream = null;
 		
+		try {fStream = new FileInputStream(this.loadedFile);}
+		catch(FileNotFoundException x) { throw x;}
+		
 		try {
-			fStream = new FileInputStream(this.loadedFile);
 			fStream.read(fByte);
 			
 			if(length > 1) {
@@ -57,11 +59,7 @@ public final class FILEUtil {
 				System.out.println(this.FBreak[0].length);
 			}
 			
-		} catch (FileNotFoundException e) {
-			System.out.println("File not found, exiting...");
-			e.printStackTrace();
-			throw e;
-		} catch (IOException e) {
+		}  catch (IOException e) {
 			System.out.println("IOException, exiting...");
 			e.printStackTrace();
 			System.exit(1);
