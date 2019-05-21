@@ -110,11 +110,10 @@ public class Server implements Runnable {
 					Integer counter = 0;
 					while(xx) {
 						if(clientsT.get(counter) != null) {
-							System.out.println("here");
 							if(clientsT.get(counter).isAlive() == false) {
 								counter++;
 							} else {
-								System.out.println("Thread #" + counter+" Still working.");
+								//System.out.println("Thread #" + counter+" Still working.");
 							}
 						} else {
 							System.out.println("All threads are done, exiting...");
