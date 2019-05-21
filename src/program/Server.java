@@ -276,13 +276,9 @@ public class Server implements Runnable {
 		Thread listener = new Thread(new Server(69),"Listener");
 		listener.start();
 		
-		
 	    String s = JOptionPane.showInputDialog("Shutdown server? Type 'quit':").toLowerCase();
-	    
-	    System.out.println("TO EXIT, type 'quit'");
-		
+	
 	    if("quit".equals(s)) {
-	    	    System.out.println("TO EXIT, type 'quit'");
 	        	listener.interrupt();
 	    }
 	}
