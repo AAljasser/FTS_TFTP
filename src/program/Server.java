@@ -170,7 +170,7 @@ public class Server implements Runnable {
 			e.printStackTrace();
 		}
 		if(rType == 2) { //Write Request
-			tempData = new byte[512][508];
+			tempData = new byte[512][];
 			while (run == 1) {
 				System.out.println("Working on Data# "+blockCounter);
 				
@@ -195,7 +195,7 @@ public class Server implements Runnable {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				dataPack = new DataPacket(this.ClientPacket.getData());
+				dataPack = new DataPacket(Arrays.copyOfRange(this.ClientPacket.getData(),0,this.ClientPacket.getLength()));
 				
 				if(this.ClientPacket.getLength()<512) {
 					run = -1;
@@ -203,11 +203,7 @@ public class Server implements Runnable {
 				
 				tempData[blockCounter-1] = dataPack.getData();
 				
-				System.out.println(this.ClientPacket.getLength());
-				
-				dataPack = new DataPacket(this.ClientPacket.getData());
-				
-				
+				System.out.println(this.ClientPacket.getLength());			
 			}
 			tempData = Arrays.copyOfRange(tempData, 0, blockCounter);
 			loadedFile = new FILEUtil(tempData);

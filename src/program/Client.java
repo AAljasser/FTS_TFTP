@@ -150,9 +150,9 @@ public class Client {
 			
 			TFTPUtil.receive(sendReceiveSocket, dgp, "Waiting for DataACK...");
 			
-			DataPacket dataPacket = new DataPacket(dgp.getData());
+			DataPacket dataPacket = new DataPacket(Arrays.copyOfRange(dgp.getData(),0,dgp.getLength()));
 			
-			data = ArrayUtil.pushBidimensional(data, dgp.getData());
+			data = ArrayUtil.pushBidimensional(data, dataPacket.getData());
 			//data[counter] = Arrays.copyOfRange(dgp.getData(),4,dgp.getLength());
 			//System.out.println(dgp.getLength());
 			//counter++;
