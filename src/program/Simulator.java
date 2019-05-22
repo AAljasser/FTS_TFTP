@@ -75,12 +75,12 @@ public class Simulator{
             //wait for response from the server
                 getServerResponse();
             //construct a client packet
-                this.toClient = new DatagramPacket(this.fromServerPacket.getData(), this.fromServerPacket.getData().length, this.client);
+                this.toClientPacket = new DatagramPacket(this.fromServerPacket.getData(), this.fromServerPacket.getData().length, this.client);
             //send the response to the client
                 sendToClient();
             //wait for response from the client
                 getClientResponse();
-                this.toServer = new DatagramPacket(this.fromClientPacket.getData(), this.fromClientPacket.getData().length, this.server)
+                this.toServerPacket = new DatagramPacket(this.fromClientPacket.getData(), this.fromClientPacket.getData().length, this.server)
                 }
             }catch(IOException e){
                 e.printStackTrace();
