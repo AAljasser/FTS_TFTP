@@ -20,7 +20,7 @@ public class Simulator{
          {
 		//listening to client queries
 		byte[] data = new byte[512];
-		packet = new DatagramPacket(data, data.length);
+		this.packet = new DatagramPacket(data, data.length);
 
 		try {
 			this.listeningSocket.receive(this.packet);
