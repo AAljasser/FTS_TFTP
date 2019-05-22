@@ -1,8 +1,8 @@
 /*
- * INCOMPLETE!!! DOESN'T WORK
+ * WORKS
  */
 
-package program;
+//
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -21,18 +21,92 @@ public class Simulator extends Thread{
    {
        try
        {
-           (new Simulator()).start();
+           Simulator proxy = new Simulator();
+           proxy.start();
+
        }catch(Exception e){ System.out.println(e);}
 
    }
 
    public void run(){
-       this.listen();
+
+        this.listen();
+
    }
+
+   private class Listener extends Thread
+   {
+    DatagramSocket socket;
+    DatagramPacket packet;
+    Listener() throws Exception
+    {
+        this.socket = new DatagramSocket(69);
+    }
+
+    public void run()
+    {
+        this.listen();
+    }
+
+    private void listen() 
+    {
+        try{
+         byte[] buff = new byte[512];
+         this.packet = new DatagramPacket(buff, buff.length);
+         System.out.println("Server: Listening on port 69");
+         while(true)
+         {
+             //Thread.sleep(3000);
+             this.socket.receive(packet);
+             System.out.println("Server Received packet");
+         }
+         }catch(Exception e){ System.out.println(e);}
+     }
+   }
+
+
+   private class Client extends Thread
+   {
+       DatagramSocket socket;
+       DatagramPacket packet;
+       Client() throws Exception
+       {
+           this.socket = new DatagramSocket();
+       }
+
+       public void run()
+       {
+           this.transfer();
+       }
+
+       private void transfer()
+       {
+           try{
+            byte[] buff = new byte[512];
+            this.packet = new DatagramPacket(buff, buff.length, InetAddress.getLocalHost(),29);
+            while(true)
+            {
+                Thread.sleep(3000);
+                this.socket.send(packet);
+                System.out.println("Sent a packet");
+            }
+            }catch(Exception e){ System.out.println(e);}
+        }
+   }
+
 
    private void listen()
    {
         try {
+            //starting server
+            Listener server = new Listener();
+            server.start();
+
+            //starting Client
+            Client client = new Simulator.Client();
+            client.start();
+
+
             System.out.println("Simulator is Listening on Port 29: Waiting for packet.");
            while(true)
            {
@@ -140,6 +214,8 @@ public class Simulator extends Thread{
 
         private void getServerResponse() throws Exception
         {
+            byte[] buff = new byte[512];
+            this.fromServerPacket = new DatagramPacket(buff, buff.length);
          this.serverSocket.receive(this.fromServerPacket);
          // Process the received datagram.
          System.out.println("Simulator: Received from Server:");
@@ -182,5 +258,7 @@ public class Simulator extends Thread{
 
 
 }
+
+
 
 
