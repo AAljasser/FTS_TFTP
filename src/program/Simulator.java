@@ -1,9 +1,9 @@
-package program;
+//
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class Simulator{
+public class Simulator extends Thread{
    
    private DatagramSocket listeningSocket;
    private DatagramPacket packet;
@@ -13,24 +13,38 @@ public class Simulator{
       this.listeningSocket = new DatagramSocket(29);
    }
 
-   public void listen()
+   public static void main(String arg[] )
    {
-        System.out.println("Simulator is Listening on Port 29: Waiting for packet.");
-         while(true)
-         {
-		//listening to client queries
-		byte[] data = new byte[512];
-		this.packet = new DatagramPacket(data, data.length);
+       try
+       {
+           (new Simulator()).start();
+       }catch(Exception e){ System.out.println(e);}
 
-		try {
-			this.listeningSocket.receive(this.packet);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+   }
 
-		//create a thread that will handle the request
-		(new RequestHandler(this.packet)).start();
+   public void run(){
+       this.listen();
+   }
+
+   private void listen()
+   {
+        try {
+            System.out.println("Simulator is Listening on Port 29: Waiting for packet.");
+           while(true)
+           {
+            //listening to client queries
+            byte[] data = new byte[512];
+            packet = new DatagramPacket(data, data.length);
+
+            this.listeningSocket.receive(this.packet);
+
+            //create a thread that will handle the request
+            (new RequestHandler(this.packet)).start();
+           }
+        } catch (Exception se) 
+        {
+            se.printStackTrace();
+            System.exit(1);
          }
    }
 
@@ -47,7 +61,7 @@ public class Simulator{
         InetSocketAddress client;
         InetSocketAddress server = new InetSocketAddress("localhost",69);
 
-        RequestHandler(DatagramPacket clientPacket)
+        RequestHandler(DatagramPacket clientPacket) throws Exception
         {
             //construct the packet to send to the server
             this.toServerPacket = new DatagramPacket(clientPacket.getData(),clientPacket.getData().length, this.server);
@@ -56,14 +70,8 @@ public class Simulator{
             this.client = new InetSocketAddress(clientPacket.getAddress(), clientPacket.getPort());
            
             //create sockets
-            try {
-				this.clientSocket = new DatagramSocket();
-				this.serverSocket = new DatagramSocket();
-			} catch (SocketException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-            
+            this.clientSocket = new DatagramSocket();
+            this.serverSocket = new DatagramSocket();
         }
 
         public void run()
@@ -73,39 +81,25 @@ public class Simulator{
         
         private void initializeTransaction()
         {
-            while(true) //infinite loop
-			{
-         //send the packet to the server
-			try {
-			} catch (Exception e3) {
-				// TODO Auto-generated catch block
-				e3.printStackTrace();
-			}
-         //wait for response from the server
-			try {
-				getServerResponse();
-			} catch (Exception e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			}
-         //construct a client packet
-			this.toClientPacket = new DatagramPacket(this.fromServerPacket.getData(), this.fromServerPacket.getData().length, this.client);
-         //send the response to the client
-			try {
-				sendToClient();
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-         //wait for response from the client
-			try {
-				getClientResponse();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			this.toServerPacket = new DatagramPacket(this.fromClientPacket.getData(), this.fromClientPacket.getData().length, this.server) 	;
-			}
+            try{
+                while(true) //infinite loop
+                {
+            //send the packet to the server
+                sendToServer();
+            //wait for response from the server
+                getServerResponse();
+            //construct a client packet
+                this.toClientPacket = new DatagramPacket(this.fromServerPacket.getData(), this.fromServerPacket.getData().length, this.client);
+            //send the response to the client
+                sendToClient();
+            //wait for response from the client
+                getClientResponse();
+                this.toServerPacket = new DatagramPacket(this.fromClientPacket.getData(), this.fromClientPacket.getData().length, this.server);
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
 
         private void sendToClient() throws Exception
@@ -182,18 +176,7 @@ public class Simulator{
 
    }
 
-   public static void main(String args[]) {
-	   Simulator s = null;
-	  try {
-		s = new Simulator();
-	} catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	  s.listen();
-   }
-   
-   
+
 }
 
 
