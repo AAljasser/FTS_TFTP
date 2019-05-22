@@ -16,12 +16,12 @@ Files-> Test files used, subfolder named server is the dir used for sever.
 Client State Machine.png
 Iteration 1 Use Cases.pdf
 Server State Machine.png
+UML Diagram.png
 README.txt
 
 Execution:
 **Must change Server and Client dir found up top**
 Run Server (An exit prompt will always be on, used to exit server)
-Run ErrorSimulator
 Run Client, follow prompt.
 
 
