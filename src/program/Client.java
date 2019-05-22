@@ -77,7 +77,7 @@ public class Client {
 		
 		int port = -1;
 		
-		rp.setDatagramPacket(SERVER_ADDRESS, SIMULATOR_PORT);		
+		rp.setDatagramPacket(SERVER_ADDRESS, SERVER_PORT);		
 		
 		TFTPUtil.send(sendReceiveSocket, rp.getDatagramPacket(), "Trying to connect to server...");
 
@@ -134,7 +134,7 @@ public class Client {
 	}
 
 	public void establishRRQ(RequestPacket rp) {
-		rp.setDatagramPacket(SERVER_ADDRESS, SIMULATOR_PORT);
+		rp.setDatagramPacket(SERVER_ADDRESS, SERVER_PORT);
 		
 		TFTPUtil.send(sendReceiveSocket, rp.getDatagramPacket(), "Trying to connect to server...");
 	}

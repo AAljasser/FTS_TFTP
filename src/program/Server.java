@@ -224,7 +224,6 @@ public class Server implements Runnable {
 					e1.printStackTrace();
 				}
 				e.printStackTrace();
-				System.exit(1);
 			}
 			
 			tempData = loadedFile.getData();
