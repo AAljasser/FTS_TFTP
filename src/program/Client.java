@@ -33,7 +33,7 @@ public class Client {
 	public Client() {
 		sendReceiveSocket = TFTPUtil.datagramSocket();
 		SERVER_PORT = 69;
-		SIMULATOR_PORT = 27;
+		SIMULATOR_PORT = 29;
 	    try {
 			SERVER_ADDRESS = InetAddress.getLocalHost();
 			SIMULATOR_ADDRESS = InetAddress.getLocalHost();
@@ -77,7 +77,7 @@ public class Client {
 		
 		int port = -1;
 		
-		rp.setDatagramPacket(SERVER_ADDRESS, SERVER_PORT);		
+		rp.setDatagramPacket(SERVER_ADDRESS, SIMULATOR_PORT);		
 		
 		TFTPUtil.send(sendReceiveSocket, rp.getDatagramPacket(), "Trying to connect to server...");
 
@@ -134,7 +134,7 @@ public class Client {
 	}
 
 	public void establishRRQ(RequestPacket rp) {
-		rp.setDatagramPacket(SERVER_ADDRESS, SERVER_PORT);
+		rp.setDatagramPacket(SERVER_ADDRESS, SIMULATOR_PORT);
 		
 		TFTPUtil.send(sendReceiveSocket, rp.getDatagramPacket(), "Trying to connect to server...");
 	}
