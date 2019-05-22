@@ -1,11 +1,3 @@
-// TFTPSim.java
-// This class is the beginnings of an error simulator for a simple TFTP server 
-// based on UDP/IP. The simulator receives a read or write packet from a client and
-// passes it on to the server.  Upon receiving a response, it passes it on to the 
-// client.
-// One socket (23) is used to receive from the client, and another to send/receive
-// from the server.  A new socket is used for each communication back to the client.   
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
