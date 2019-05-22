@@ -20,7 +20,7 @@ public class Server implements Runnable {
 	private int rType = 0; // 0 - Server, 1 - WR, 2 - RR
 	private String rFN;
 	private String rM;
-	private String dir = "C:\\Users\\AyeJay\\Desktop\\files\\server\\";
+	private String dir = "C:\\Jose\\Java\\files\\save\\";
 	//*** TEMP
 	private DatagramSocket ServerSocket = null;
 	Thread closure;

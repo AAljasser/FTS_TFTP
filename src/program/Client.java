@@ -17,7 +17,7 @@ import utilities.packets.*;
 
 public class Client {
 
-	private static final String PATH = "C:\\Users\\AyeJay\\Desktop\\files\\";
+	private static final String PATH = "C:\\Jose\\Java\\files\\";
 
 	private static final int MAX_CAPACITY = 512;
 	
