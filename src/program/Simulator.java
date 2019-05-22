@@ -140,7 +140,7 @@ public class Simulator{
         }
 
 
-        private void getClientResponse()
+        private void getClientResponse() throws Exception
         {
             this.clientSocket.receive(this.fromClientPacket);
 
