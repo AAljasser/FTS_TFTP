@@ -1,21 +1,28 @@
-1. FILES AND FOLDER STRUCTURE
--iteration 1	  #main folder
---README.txt 	  #this file
---server.java   #the server code
---client.java   #the client code
---test files	  #folder contains test files that can be used
----image.jpg	  #images test file
----video.mp4	  #video test file
----sound.mp3	  #sound test file
----text.txt	    #text test file
----oddtype.odd  #odd file of unknown type
---server files 	#files received or sent by the server
----sent		      #files sent by the server to the client
----received	    #files received by the server from the client
---client files	#files received or sent by the client
----sent		      #files sent by the client to the server
----received	    #files received by the client from the server
+SYSC3303A - Team #6
 
-2. SETUP INSTRUCTIONS
+Iteration #1 Submission
 
-3. TESTING INSTRUCTIONS
+Students (Roles):-
+Abdullrhman Aljasser (Code - Server) - 100988128
+Chance Abemba (Code - Error Simulator) - 101011372
+Muhanad alshabshabi (UML, Use Case, and State Diagram) - 
+100958798
+Majd Al Khany
+ (UML, Use Case, and State Diagram) - 100977501
+Jose Franco (Code - Client) - 
+
+Files:
+Files-> Test files used, subfolder named server is the dir used for sever.
+Client State Machine.png
+Iteration 1 Use Cases.pdf
+Server State Machine.png
+README.txt
+
+Execution:
+**Must change Server and Client dir found up top**
+Run Server (An exit prompt will always be on, used to exit server)
+Run ErrorSimulator
+Run Client, follow prompt.
+
+
+
