@@ -3,13 +3,24 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import utilities.ArrayUtil;
 import utilities.TFTPUtil;
 
-public abstract class Packet {
+public class Packet {
 	
 	private byte[] packet;
 	private DatagramPacket datagramPacket;
 	private byte[] id;
+		
+	public Packet() {
+		
+	}
+	
+	public Packet(DatagramPacket datagramPacket) {
+		this.datagramPacket = datagramPacket;
+		setPacket(datagramPacket.getData());
+		setID(ArrayUtil.subArray(packet, 0, 2));		
+	}
 		
 	public byte[] getPacket() {
 		return packet;
@@ -40,6 +51,5 @@ public abstract class Packet {
 	public byte[] getID() {
 		return id;
 	}
-	public abstract byte[] constructPacket();
 
 }

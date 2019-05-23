@@ -12,7 +12,13 @@ public class ACKPacket extends Packet{
 		this.setPacket(constructPacket());
 	}
 	
-	public ACKPacket(byte[] packet) {
+	/*
+	 * public ACKPacket(byte[] packet) { this.setPacket(packet); blockNumber =
+	 * extractBlockNumber(packet); this.setID(extractID(packet)); }
+	 */
+	
+	public ACKPacket(byte[] array, int length) {
+		byte[] packet = ArrayUtil.subArray(array, 0, length);
 		this.setPacket(packet);
 		blockNumber = extractBlockNumber(packet);	
 		this.setID(extractID(packet));

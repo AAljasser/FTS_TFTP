@@ -14,7 +14,14 @@ public class DataPacket extends Packet{
 		this.setPacket(constructPacket());
 	}
 	
-	public DataPacket(byte[] packet) {
+	/*
+	 * public DataPacket(byte[] packet) { this.setPacket(packet); blockNumber =
+	 * extractBlockNumber(packet); data = extractData(packet);
+	 * this.setID(extractID(packet)); }
+	 */
+	
+	public DataPacket(byte[] array, int length) {
+		byte[] packet = ArrayUtil.subArray(array, 0, length);
 		this.setPacket(packet);
 		blockNumber = extractBlockNumber(packet);
 		data = extractData(packet);

@@ -12,7 +12,13 @@ public class ErrorPacket extends Packet{
 		this.setPacket(constructPacket());
 	}
 	
-	public ErrorPacket(byte[] packet) {
+	/*
+	 * public ErrorPacket(byte[] packet) { this.setPacket(packet); errorCode =
+	 * this.extractErrorCode(packet); msg = this.extractMSG(packet); }
+	 */
+	
+	public ErrorPacket(byte[] array, int length) {
+		byte[] packet = ArrayUtil.subArray(array, 0, length);
 		this.setPacket(packet);
 		errorCode = this.extractErrorCode(packet);
 		msg = this.extractMSG(packet);

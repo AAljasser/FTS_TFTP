@@ -38,7 +38,7 @@ public class Server implements Runnable {
 		}
 	}
 	public Server(DatagramPacket CP, int t,byte[] rd) {
-		RequestPacket temp = new RequestPacket(rd);
+		RequestPacket temp = new RequestPacket(rd, rd.length);
 		this.ClientPacket = CP;
 		this.ClientAddress = CP.getAddress();
 		this.ClientPort = CP.getPort();
@@ -195,7 +195,7 @@ public class Server implements Runnable {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				dataPack = new DataPacket(Arrays.copyOfRange(this.ClientPacket.getData(),0,this.ClientPacket.getLength()));
+				dataPack = new DataPacket(this.ClientPacket.getData(),this.ClientPacket.getLength());
 				
 				if(this.ClientPacket.getLength()<512) {
 					run = -1;
@@ -240,7 +240,7 @@ public class Server implements Runnable {
 					e.printStackTrace();
 				}
 				DatagramPacket ack = TFTPUtil.datagramPacket(4);
-				dataTrans = new ACKPacket(rawData);
+				dataTrans = new ACKPacket(rawData, rawData.length);
 				try {
 					this.ServerSocket.receive(ack);
 				} catch (IOException e) {
@@ -248,7 +248,7 @@ public class Server implements Runnable {
 					e.printStackTrace();
 				}
 				
-				dataTrans = new ACKPacket(ack.getData());
+				dataTrans = new ACKPacket(ack.getData(), ack.getLength());
 				
 				if(dataTrans.getIntBN() == blockCounter) {
 					blockCounter++;

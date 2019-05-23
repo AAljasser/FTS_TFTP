@@ -85,7 +85,7 @@ public class Client {
 
 		TFTPUtil.receive(sendReceiveSocket, response, "Waiting for ACK...");
 
-		ACKPacket ack = new ACKPacket(response.getData());
+		ACKPacket ack = new ACKPacket(response.getData(), response.getLength());
 
 		byte[] ackBytes = ack.getID();
 		int ackBN = ack.getIntBN();
@@ -122,7 +122,7 @@ public class Client {
 		
 				TFTPUtil.receive(sendReceiveSocket, ack, "Waiting for ACK...");
 		
-				ACKPacket ackPacket = new ACKPacket(ack.getData());
+				ACKPacket ackPacket = new ACKPacket(ack.getData(), ack.getLength());
 		
 				System.out.println("Got ACK PACKET #" + ackPacket.getIntBN());
 			}
@@ -150,7 +150,7 @@ public class Client {
 			
 			TFTPUtil.receive(sendReceiveSocket, dgp, "Waiting for DataACK...");
 			
-			DataPacket dataPacket = new DataPacket(Arrays.copyOfRange(dgp.getData(),0,dgp.getLength()));
+			DataPacket dataPacket = new DataPacket(dgp.getData(), dgp.getLength());
 			
 			data = ArrayUtil.pushBidimensional(data, dataPacket.getData());
 			//data[counter] = Arrays.copyOfRange(dgp.getData(),4,dgp.getLength());

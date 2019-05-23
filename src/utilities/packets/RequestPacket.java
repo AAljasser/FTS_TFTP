@@ -17,7 +17,16 @@ public class RequestPacket extends Packet{
 		this.setPacket(constructPacket());
 	}
 	
-	public RequestPacket(byte[] packet) {
+	/*
+	 * public RequestPacket(byte[] packet) { this.setPacket(packet); request =
+	 * extractRequest(packet); filename = extractFilename(packet); mode =
+	 * extractMode(packet); this.setID(extractID(packet));
+	 * 
+	 * }
+	 */
+	
+	public RequestPacket(byte[] array, int length) {
+		byte[] packet = ArrayUtil.subArray(array, 0, length);
 		this.setPacket(packet);
 		request = extractRequest(packet);
 		filename = extractFilename(packet);
