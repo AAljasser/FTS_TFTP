@@ -25,37 +25,42 @@ public class Simulator extends Thread{
    }
 
    public void run(){
+
         this.listen();
+
    }
 
 
    private void listen()
    {
-       boolean running = false;
         try {
+            BufferedReader optionReader = new BufferedReader(new InputStreamReader(System.in));
            while(true)
            {
             //show options
             System.out.println("\t----------Welcome to the Simulator-------------\n\t Please select an option below then press <enter>\n\t\t1 DELAY PACKET \n\t\t2 LOSS PACKET \n\t\t3 DUPLICATE PACKETS \n");
             //user selects an option
-            String pick = System.console().readLine();
+            String pick = optionReader.readLine();
             System.out.println("You entered: "+pick);
            //user select the starting packet number
            System.out.println("\n Please insert the starting packet # to effect then press <enter> \n");
-            String startNumber = System.console().readLine();
+            String startNumber = optionReader.readLine();
             System.out.println("You entered: "+startNumber);
            //user select the finishing packet
            System.out.println("\n Please insert the finishing packet # to effect then press <enter> \n");
-           String endNumber = System.console().readLine();
+           String endNumber = optionReader.readLine();
             System.out.println("You entered: "+endNumber);
            //ends
            System.out.println("\n Packet #"+startNumber+" to #"+endNumber+" will experience OPTION "+pick+"\n");
+
+           System.out.println("->Simulator:Listening on Port 29 \n ->Simulator: Waiting for packet.");
 
             //listening to client queries
             byte[] data = new byte[512];
             packet = new DatagramPacket(data, data.length);
 
             this.listeningSocket.receive(this.packet);
+
 
             //create a thread that will handle the request
             (new RequestHandler(this.packet,pick,Integer.parseInt(startNumber),Integer.parseInt(endNumber))).start();
@@ -239,5 +244,3 @@ public class Simulator extends Thread{
 
 
 }
-
-
