@@ -170,11 +170,11 @@ public class Simulator extends Thread{
          System.out.println("\t Destination host port: " + this.toServerPacket.getPort());
          int len = this.toServerPacket.getLength();
          System.out.println("\t Length: " + len);
-        /*  System.out.println("Containing: ");
+          System.out.println("Containing: ");
          for (int j=0;j<len;j++) 
          {
             System.out.println("byte " + j + " " + this.toServerPacket.getData()[j]);
-         } */
+         } 
          if(this.clientPacketEffectLowerRange <= this.clientPacketSentCounter && this.clientPacketUpperRange >= this.clientPacketSentCounter )
          {
             switch(this.clientPacketEffect)
@@ -209,12 +209,12 @@ public class Simulator extends Thread{
          System.out.println("\t Host port: " + clientPort);
          int len = this.fromServerPacket.getLength();
          System.out.println("\t Length: " + len);
-         /* System.out.println("Containing: " );
+         System.out.println("Containing: " );
          // print the bytes
          for (int j=0;j<len;j++) 
          {
             System.out.println("byte " + j + " " + this.fromServerPacket.getData()[j]);
-         } */
+         } 
 
         }
 
@@ -231,12 +231,12 @@ public class Simulator extends Thread{
          System.out.println("\t Host port: " + clientPort);
          int len = this.fromClientPacket.getLength();
          System.out.println("\t Length: " + len);
-         /* System.out.println("Containing: " );
+          System.out.println("Containing: " );
          // print the bytes
          for (int j=0;j<len;j++) 
          {
             System.out.println("byte " + j + " " + this.fromClientPacket.getData()[j]);
-         } */
+         }
 
         }
 
