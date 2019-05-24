@@ -1,4 +1,5 @@
 //
+package program;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -202,6 +203,7 @@ public class Simulator extends Thread{
             byte[] buff = new byte[512];
             this.fromServerPacket = new DatagramPacket(buff, buff.length);
          this.serverSocket.receive(this.fromServerPacket);
+            this.server = new InetSocketAddress("localhost", this.fromServerPacket.getPort());
          // Process the received datagram.
          System.out.println("->Simulator: Received from Server:");
          System.out.println("\t From host: " + this.fromServerPacket.getAddress());
