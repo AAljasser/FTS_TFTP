@@ -53,7 +53,7 @@ public class Simulator extends Thread{
            //ends
            System.out.println("\n Packet #"+startNumber+" to #"+endNumber+" will experience OPTION "+pick+"\n");
 
-           System.out.println("->Simulator:Listening on Port 29 \n ->Simulator: Waiting for packet.");
+           System.out.println("->Simulator:Listening on Port 29 \n->Simulator: Waiting for packet.");
 
             //listening to client queries
             byte[] data = new byte[512];
