@@ -5,13 +5,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import javax.swing.JOptionPane;
 import utilities.*;
-import utilities.client.ClientRR;
-import utilities.client.ClientWR;
+import utilities.client.*;
 import utilities.packets.*;
 
 public class Client {
 
-	protected static final String PATH = "C:\\Jose\\Java\\files\\";
+	protected static final String PATH = "C:\\Users\\AyeJay\\Desktop\\files\\";
 	protected static final int MAX_CAPACITY = 512;
 
 	private int serverPort;
@@ -24,7 +23,7 @@ public class Client {
 	// constructor
 	public Client() {
 		sendReceiveSocket = TFTPUtil.datagramSocket();
-		serverPort = 69;
+		serverPort = 29;
 		try {
 			serverAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -42,7 +41,6 @@ public class Client {
 
 		if (request.getType().equalsIgnoreCase("read")) {
 			new ClientRR(RPacket);
-
 		} else if (request.getType().equalsIgnoreCase("write")) {
 			new ClientWR(RPacket);
 		} else

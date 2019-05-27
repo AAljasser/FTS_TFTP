@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 import program.Server;
 import utilities.packets.*;
@@ -46,12 +47,14 @@ public class ServerRR extends Server {
 		byte[][] temp = this.loadedFile.getData();
 		byte[] rData = new byte[4];
 		int bNum = 0;
+		int tNum = 0;
 		
 		while (bNum < temp.length) {
 			dPack = new DataPacket(bNum,temp[bNum]);
 			dPack.setDatagramPacket(this.cAdd, this.cPort);
 			
 			try {
+				System.out.println("Sending BlockNum: "+bNum);
 				this.socket.send(dPack.getDatagramPacket());
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -65,8 +68,13 @@ public class ServerRR extends Server {
 				this.aPack = new ACKPacket(this.packet.getData(),this.packet.getLength());
 				
 				if(bNum == this.aPack.getIntBN()) bNum++;
-			} catch (SocketException e1) {
+				tNum = 0;
+			} catch (SocketTimeoutException e1) {
 				System.out.println("ACK receive timed-out... retrying");
+				tNum++;
+				if(tNum > 5) {
+					break;
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
