@@ -56,7 +56,6 @@ public final class FILEUtil {
 			} else {
 				this.FBreak = new byte[1][];
 				this.FBreak[0] = fByte;
-				System.out.println(this.FBreak[0].length);
 			}
 			
 		}  catch (IOException e) {
