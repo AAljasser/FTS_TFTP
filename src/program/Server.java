@@ -97,7 +97,14 @@ public class Server implements Runnable {
 		Thread serverThread = new Thread(new Server(69),"ServerThread");
 		serverThread.start();
 		
-		JOptionPane.showInputDialog("Quit?");
+		Object[] options = {"Quit"};
+		JOptionPane.showOptionDialog(null,
+                "Stop server","Server Interface",
+                JOptionPane.PLAIN_MESSAGE,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
 		DatagramPacket p=null;
 		DatagramSocket s=null;
 		try {
