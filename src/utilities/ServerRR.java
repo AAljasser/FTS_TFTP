@@ -47,6 +47,7 @@ public class ServerRR extends Server {
 		byte[][] temp = this.loadedFile.getData();
 		byte[] rData = new byte[4];
 		int bNum = 0;
+		int tNum = 0;
 		
 		while (bNum < temp.length) {
 			dPack = new DataPacket(bNum,temp[bNum]);
@@ -67,8 +68,13 @@ public class ServerRR extends Server {
 				this.aPack = new ACKPacket(this.packet.getData(),this.packet.getLength());
 				
 				if(bNum == this.aPack.getIntBN()) bNum++;
+				tNum = 0;
 			} catch (SocketTimeoutException e1) {
 				System.out.println("ACK receive timed-out... retrying");
+				tNum++;
+				if(tNum > 5) {
+					break;
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

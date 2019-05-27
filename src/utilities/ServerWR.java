@@ -34,6 +34,7 @@ public class ServerWR extends Server {
 		byte[] rData = new byte[512];
 		int bNum = 0;
 		int run = 0;
+		int tNum = 0;
 		
 		
 		while (run == 0) {
@@ -55,13 +56,17 @@ public class ServerWR extends Server {
 				if(bNum+1 == this.dPack.getIntBN()) {
 					temp[bNum] = this.dPack.getData();
 					bNum++;
-					System.out.println(this.packet.getLength());
 					if(this.packet.getLength()<512) {
 						run = -1;
 					}
 				}
+				tNum=0;
 			} catch (SocketTimeoutException e1) {
 				System.out.println("ACK wait timed-out... retrying");
+				tNum++;
+				if(tNum > 5) {
+					break;
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -63,27 +63,29 @@ public class ClientWR extends Client {
 		System.out.println("Writing File...");
 		int i = 0;
 
-		while(i < data.length) {
+		while(i < data.length-1) {
 			DataPacket dp = new DataPacket(i + 1, data[i]);
 
 			dp.setDatagramPacket(responseAddress, responsePort);
 			TFTPUtil.send(getSocket(), dp.getDatagramPacket(), "Sending Packet #" + dp.getIntBN());
+			
+			DatagramPacket ack = TFTPUtil.datagramPacket(4);
+			
+			TFTPUtil.receive(getSocket(), ack, "Waiting for ACK...");
+			
+			ACKPacket ackPacket = new ACKPacket(ack.getData(), ack.getLength());
+			
+			//System.out.println(ackPacket.getIntBN());
 
-			if(i == dp.getIntBN() - 1) {
-				//TFTPUtil.send(getSocket(), dp.getDatagramPacket(), "Sending Packet #" + dp.getIntBN());
+			if(i == ackPacket.getIntBN()-1) {
 				i++;
-				if (i != data.length - 1) {
-					DatagramPacket ack = TFTPUtil.datagramPacket(4);
-	
-					TFTPUtil.receive(getSocket(), ack, "Waiting for ACK...");
-	
-					ACKPacket ackPacket = new ACKPacket(ack.getData(), ack.getLength());
-	
-					System.out.println("Got ACK PACKET #" + ackPacket.getIntBN());
-				}
 			}
 
 		}
+		DataPacket dp = new DataPacket(i + 1, data[i]);
+
+		dp.setDatagramPacket(responseAddress, responsePort);
+		TFTPUtil.send(getSocket(), dp.getDatagramPacket(), "Sending Packet #" + dp.getIntBN());
 
 		System.out.println("FINISH WRITING...");
 
