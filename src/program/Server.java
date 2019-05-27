@@ -12,7 +12,7 @@ import utilities.packets.*;
 
 public class Server implements Runnable {
 	//Defaults
-	protected static String dir = "C:\\Users\\AyeJay\\Desktop\\files\\server\\";
+	protected static String dir = "C:\\Jose\\Java\\files\\save\\";
 	
 	protected DatagramSocket socket;
 	protected DatagramPacket packet;
@@ -97,7 +97,14 @@ public class Server implements Runnable {
 		Thread serverThread = new Thread(new Server(69),"ServerThread");
 		serverThread.start();
 		
-		JOptionPane.showInputDialog("Quit?");
+		Object[] options = {"Quit"};
+		JOptionPane.showOptionDialog(null,
+                "Stop server","Server Interface",
+                JOptionPane.PLAIN_MESSAGE,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
 		DatagramPacket p=null;
 		DatagramSocket s=null;
 		try {
