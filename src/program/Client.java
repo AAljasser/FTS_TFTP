@@ -64,6 +64,10 @@ public class Client {
 	}
 
 	public Request createRequest(String type) {
+		if(type == null) {
+			endClient();
+		}
+				
 		try {
 			return new Request(type);
 		} catch (Exception e) {
@@ -79,14 +83,20 @@ public class Client {
 
 	private void showInterface() {
 		// creates a request Object with the type of request entered by the user
-		request = createRequest(JOptionPane.showInputDialog("File transfer operation(Write or Read):"));
+		request = createRequest(JOptionPane.showInputDialog(null, "File transfer operation(Write or Read):", "Client Interface", JOptionPane.DEFAULT_OPTION));
 		// saves the filename that the user enters
-		filename = JOptionPane.showInputDialog("Enter the file name :");
+		filename = JOptionPane.showInputDialog(null, "Enter filename: ", "Client Interface", JOptionPane.DEFAULT_OPTION);
+		if(filename == null) endClient();
 		// saves the mode that the user enters.
-		mode = JOptionPane.showInputDialog("Enter the mode :").toLowerCase();
-		// creates a requestPacket
+		mode = JOptionPane.showInputDialog(null, "Enter mode: ", "Client Interface", JOptionPane.DEFAULT_OPTION).toLowerCase();
+		if(mode == null) endClient();
+		
 	}
 
+	public void endClient() {
+		JOptionPane.showMessageDialog(null, "Error, client will close now", "ERROR",JOptionPane.ERROR_MESSAGE);
+		System.exit(1);
+	}
 	/**
 	 * Main method of Client class
 	 */
