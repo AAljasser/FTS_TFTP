@@ -25,11 +25,6 @@ public class ServerWR extends Server {
 		RequestPacket temp = new RequestPacket(p.getData(), p.getLength());
 		this.fileName = temp.getFilename();
 		this.fileMode = temp.getMode();
-		try {
-			this.socket.setSoTimeout(500);
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override
@@ -52,18 +47,21 @@ public class ServerWR extends Server {
 			
 			this.packet = new DatagramPacket(rData, rData.length);
 			try {
+				this.socket.setSoTimeout(500);
 				this.socket.receive(this.packet);
+				this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
+				
+				if(bNum+1 == this.dPack.getIntBN()) {
+					temp[bNum] = this.dPack.getData();
+					bNum++;
+					if(this.packet.getLength()<512) {
+						run = -1;
+					}
+				}
+			} catch (SocketException e1) {
+				System.out.println("ACK receive timed-out... retrying");
 			} catch (IOException e) {
 				e.printStackTrace();
-			}
-			this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
-			
-			if(bNum+1 == this.dPack.getIntBN()) {
-				temp[bNum] = this.dPack.getData();
-				bNum++;
-				if(this.packet.getLength()<512) {
-					run = -1;
-				}
 			}
 		}
 		this.loadedFile = new FILEUtil(Arrays.copyOfRange(temp,0,bNum));

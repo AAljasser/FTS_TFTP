@@ -21,11 +21,6 @@ public class ServerRR extends Server {
 		RequestPacket temp = new RequestPacket(p.getData(), p.getLength());
 		this.fileName = temp.getFilename();
 		this.fileMode = temp.getMode();
-		try {
-			this.socket.setSoTimeout(500);
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override
@@ -65,15 +60,18 @@ public class ServerRR extends Server {
 			this.packet = new DatagramPacket(rData, rData.length);
 			
 			try {
+				this.socket.setSoTimeout(500);
 				this.socket.receive(this.packet);
+				this.aPack = new ACKPacket(this.packet.getData(),this.packet.getLength());
+				
+				if(bNum == this.aPack.getIntBN()) bNum++;
+			} catch (SocketException e1) {
+				System.out.println("ACK receive timed-out... retrying");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-			this.aPack = new ACKPacket(this.packet.getData(),this.packet.getLength());
-			
-			if(bNum == this.aPack.getIntBN()) bNum++;
 			
 		}
 		
