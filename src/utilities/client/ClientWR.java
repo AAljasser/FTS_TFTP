@@ -1,8 +1,11 @@
 package utilities.client;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 import program.*;
 import utilities.FILEUtil;
@@ -30,65 +33,56 @@ public class ClientWR extends Client {
 		data = file.getData();
 		responsePort = -1;
 
-		initiate();
-	}
-
-	public void initiate() {
-		establishRequest();
 		transfer();
 	}
 
-	private void establishRequest() {
-
-		this.requestPacket.setDatagramPacket(getServerAddress(), getServerPort());
-
-		TFTPUtil.send(getSocket(), this.requestPacket.getDatagramPacket(), "Trying to connect to server...");
-
-		DatagramPacket response = TFTPUtil.datagramPacket(4);
-
-		TFTPUtil.receive(getSocket(), response, "Waiting for ACK...");
-
-		ACKPacket ack = new ACKPacket(response.getData(), response.getLength());
-
-		byte[] ackBytes = ack.getID();
-		int ackBN = ack.getIntBN();
-
-		if (ackBytes[0] == 0 && ackBytes[1] == 4 && ackBN == 0) {
-			responsePort = response.getPort();
-			responseAddress = response.getAddress();
-		}
-	}
-
 	private void transfer() {
+		//sending request...
+		this.requestPacket.setDatagramPacket(serverAddress, serverPort);
+
+		TFTPUtil.send(sendReceiveSocket, this.requestPacket.getDatagramPacket(), "Trying to connect to server...");
+
+		//writing file...
 		System.out.println("Writing File...");
 		int i = 0;
+		int tNum = 0;
 
-		while(i < data.length-1) {
-			DataPacket dp = new DataPacket(i + 1, data[i]);
+		//this loop will first get response from server then if no time out, will send a packet
+		while (i < data.length) {
 
-			dp.setDatagramPacket(responseAddress, responsePort);
-			TFTPUtil.send(getSocket(), dp.getDatagramPacket(), "Sending Packet #" + dp.getIntBN());
-			
-			DatagramPacket ack = TFTPUtil.datagramPacket(4);
-			
-			TFTPUtil.receive(getSocket(), ack, "Waiting for ACK...");
-			
-			ACKPacket ackPacket = new ACKPacket(ack.getData(), ack.getLength());
-			
-			//System.out.println(ackPacket.getIntBN());
+			DatagramPacket response = TFTPUtil.datagramPacket(4);
 
-			if(i == ackPacket.getIntBN()-1) {
-				i++;
+			try {
+				sendReceiveSocket.setSoTimeout(500);
+				sendReceiveSocket.receive(response); 
+				ACKPacket ackPacket = new ACKPacket(response.getData(), response.getLength());
+
+				if(ackPacket.getIntBN() == 0) {
+					responseAddress = response.getAddress();
+					responsePort = response.getPort();
+				}
+				if (i == ackPacket.getIntBN()) {
+					i++;
+				}				
+				
+				DataPacket dp = new DataPacket(i , data[i -1]);
+
+				dp.setDatagramPacket(responseAddress, responsePort);
+
+				TFTPUtil.send(sendReceiveSocket, dp.getDatagramPacket(), "Sending Packet #" + dp.getIntBN());
+				
+				tNum = 0;
+			} catch (SocketTimeoutException e1) {
+				System.out.println("ACK receive timed-out... retrying");
+				tNum++;
+				if(tNum > 5) {
+					break;
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-
 		}
-		DataPacket dp = new DataPacket(i + 1, data[i]);
-
-		dp.setDatagramPacket(responseAddress, responsePort);
-		TFTPUtil.send(getSocket(), dp.getDatagramPacket(), "Sending Packet #" + dp.getIntBN());
-
-		System.out.println("FINISH WRITING...");
-
 	}
 
 }

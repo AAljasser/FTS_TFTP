@@ -13,9 +13,10 @@ public class Client {
 	protected static final String PATH = "C:\\Users\\AyeJay\\Desktop\\files\\";
 	protected static final int MAX_CAPACITY = 512;
 
-	private int serverPort;
-	private InetAddress serverAddress;
-	private DatagramSocket sendReceiveSocket;
+	protected int serverPort;
+	protected InetAddress serverAddress;
+	protected DatagramSocket sendReceiveSocket;
+	
 	private String filename;
 	private String mode;
 	private Request request;
@@ -49,18 +50,7 @@ public class Client {
 		sendReceiveSocket.close(); // closes the socket
 	}
 
-	public int getServerPort() {
-		return serverPort;
-	}
-
-	public InetAddress getServerAddress() {
-		return serverAddress;
-	}
-
-	public DatagramSocket getSocket() {
-		return sendReceiveSocket;
-	}
-
+	
 	public Request createRequest(String type) {
 		if(type == null) {
 			endClient();
