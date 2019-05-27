@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 
 import program.Server;
@@ -54,12 +55,13 @@ public class ServerWR extends Server {
 				if(bNum+1 == this.dPack.getIntBN()) {
 					temp[bNum] = this.dPack.getData();
 					bNum++;
+					System.out.println(this.packet.getLength());
 					if(this.packet.getLength()<512) {
 						run = -1;
 					}
 				}
-			} catch (SocketException e1) {
-				System.out.println("ACK receive timed-out... retrying");
+			} catch (SocketTimeoutException e1) {
+				System.out.println("ACK wait timed-out... retrying");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

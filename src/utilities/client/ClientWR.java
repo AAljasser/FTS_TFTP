@@ -61,15 +61,17 @@ public class ClientWR extends Client {
 
 	private void transfer() {
 		System.out.println("Writing File...");
+		int i = 0;
 
-		for (int i = 0; i < data.length; i++) {
+		while(i < data.length) {
 			DataPacket dp = new DataPacket(i + 1, data[i]);
 
 			dp.setDatagramPacket(responseAddress, responsePort);
+			TFTPUtil.send(getSocket(), dp.getDatagramPacket(), "Sending Packet #" + dp.getIntBN());
 
 			if(i == dp.getIntBN() - 1) {
-				TFTPUtil.send(getSocket(), dp.getDatagramPacket(), "Sending Packet #" + dp.getIntBN());
-	
+				//TFTPUtil.send(getSocket(), dp.getDatagramPacket(), "Sending Packet #" + dp.getIntBN());
+				i++;
 				if (i != data.length - 1) {
 					DatagramPacket ack = TFTPUtil.datagramPacket(4);
 	

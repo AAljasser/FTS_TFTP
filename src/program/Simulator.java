@@ -90,7 +90,7 @@ public class Simulator extends Thread{
 
         private int clientPacketSentCounter =0;
 
-        InetSocketAddress client;
+        InetSocketAddress client = null;
         InetSocketAddress server = new InetSocketAddress("localhost",69);
 
         RequestHandler(DatagramPacket clientPacket) throws Exception
@@ -99,7 +99,9 @@ public class Simulator extends Thread{
             this.toServerPacket = new DatagramPacket(clientPacket.getData(),clientPacket.getData().length, this.server);
 
             //create a client profile
-            this.client = new InetSocketAddress("localhost", clientPacket.getPort());
+            if(client == null) {
+            	this.client = new InetSocketAddress("localhost", clientPacket.getPort());
+            }
 
             //store the packet
             this.fromClientPacket = clientPacket;
@@ -133,12 +135,12 @@ public class Simulator extends Thread{
             //wait for response from the server
                 getServerResponse();
             //construct a client packet
-                this.toClientPacket = new DatagramPacket(this.fromServerPacket.getData(), this.fromServerPacket.getData().length, this.client);
+                this.toClientPacket = new DatagramPacket(this.fromServerPacket.getData(), this.fromServerPacket.getLength(), this.client);
             //send the response to the client
                 sendToClient();
             //wait for response from the client
                 getClientResponse();
-                this.toServerPacket = new DatagramPacket(this.fromClientPacket.getData(), this.fromClientPacket.getData().length, this.server);
+                this.toServerPacket = new DatagramPacket(this.fromClientPacket.getData(), this.fromClientPacket.getLength(), this.server);
                 }
             }catch(Exception e){
                 e.printStackTrace();
