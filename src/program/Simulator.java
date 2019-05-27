@@ -184,7 +184,7 @@ public class Simulator extends Thread{
             {
                 case "1":
                     System.out.println("\t ****DELAYING SENDING PACKET #"+this.clientPacketSentCounter+" TO SERVER");
-                    Thread.sleep(9000);
+                    Thread.sleep(1000);
                     break;
                 case "2":
                     System.out.println("\t ****LOSING PACKET #"+this.clientPacketSentCounter+" FROM CLIENT");
