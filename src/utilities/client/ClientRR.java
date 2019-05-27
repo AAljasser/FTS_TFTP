@@ -4,7 +4,10 @@ import utilities.FILEUtil;
 import utilities.TFTPUtil;
 import utilities.packets.*;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 
 import program.*;
@@ -15,51 +18,56 @@ public class ClientRR extends Client {
 
 	public ClientRR(RequestPacket requestPacket) {
 		this.requestPacket = requestPacket;
-		initiate();
-	}
-
-	public void initiate() {
-		establishRequest();
 		transfer();
-
-	}
-
-	private void establishRequest() {
-		this.requestPacket.setDatagramPacket(getServerAddress(), getServerPort());
-
-		TFTPUtil.send(getSocket(), this.requestPacket.getDatagramPacket(), "Trying to connect to server...");
 	}
 
 	private void transfer() {
+		this.requestPacket.setDatagramPacket(serverAddress, serverPort);
+
+		TFTPUtil.send(sendReceiveSocket, this.requestPacket.getDatagramPacket(), "Trying to connect to server...");
+
 		boolean is512 = true;
 		byte[][] data = new byte[1024][];
 		int blockNumber = 0;
-
+		int tNum = 0;
+		
 		while (is512) {
+
 			DatagramPacket dgp = TFTPUtil.datagramPacket(MAX_CAPACITY);
 
-			TFTPUtil.receive(getSocket(), dgp, "Waiting for DataACK...");
+			try {
+				sendReceiveSocket.setSoTimeout(500);
+				sendReceiveSocket.receive( dgp);
+				DataPacket response = new DataPacket(dgp.getData(), dgp.getLength());
 
-			DataPacket response = new DataPacket(dgp.getData(), dgp.getLength());			
-			
-			if(blockNumber == response.getIntBN()) {
-				
-				data[blockNumber++] = Arrays.copyOfRange(dgp.getData(), 4, dgp.getLength());	
-	
 				ACKPacket ack = new ACKPacket(response.getIntBN());
-	
-				ack.setDatagramPacket(getServerAddress(), dgp.getPort());
-	
-				TFTPUtil.send(getSocket(), ack.getDatagramPacket(), "Sending ACK # " + response.getIntBN());
-	
-				if (dgp.getLength() < 512) {
-					is512 = false;
-					System.out.println("FINISHED Reading...");
+				ack.setDatagramPacket(dgp.getAddress(), dgp.getPort());
+				TFTPUtil.send(sendReceiveSocket, ack.getDatagramPacket(), "Sending ACK # " + response.getIntBN());
+
+				if (response.getIntBN() == blockNumber) {
+
+					data[blockNumber++] = Arrays.copyOfRange(dgp.getData(), 4, dgp.getLength());
+					if (dgp.getLength() < 512) {
+						is512 = false;
+						System.out.println("FINISHED Reading...");
+					}
 				}
+				
+				tNum = 0;
+			} catch (SocketTimeoutException e1) {
+				System.out.println("DataPacket wait timed-out... retrying");
+				tNum++;
+				if(tNum > 5) {
+					break;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+
 		}
-		data = Arrays.copyOfRange(data, 0, blockNumber);
 		
+		data = Arrays.copyOfRange(data, 0, blockNumber);
+
 		FILEUtil file = new FILEUtil(data);
 
 		file.saveFile(PATH + this.requestPacket.getFilename());
