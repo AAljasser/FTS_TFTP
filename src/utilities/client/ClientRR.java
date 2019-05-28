@@ -57,7 +57,7 @@ public class ClientRR extends Client {
 			} catch (SocketTimeoutException e1) {
 				System.out.println("DataPacket wait timed-out... retrying");
 				tNum++;
-				if(tNum > 5) {
+				if(tNum > 50) {
 					break;
 				}
 			} catch (IOException e) {
