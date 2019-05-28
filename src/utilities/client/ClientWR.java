@@ -75,7 +75,7 @@ public class ClientWR extends Client {
 			} catch (SocketTimeoutException e1) {
 				System.out.println("ACK receive timed-out... retrying");
 				tNum++;
-				if(tNum > 5) {
+				if(tNum > 50) {
 					break;
 				}
 			} catch (IOException e) {

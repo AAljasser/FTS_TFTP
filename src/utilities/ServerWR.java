@@ -64,7 +64,7 @@ public class ServerWR extends Server {
 			} catch (SocketTimeoutException e1) {
 				System.out.println("ACK wait timed-out... retrying");
 				tNum++;
-				if(tNum > 5) {
+				if(tNum > 50) {
 					break;
 				}
 			} catch (IOException e) {
