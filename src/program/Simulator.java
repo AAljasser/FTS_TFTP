@@ -124,6 +124,8 @@ public class Simulator extends Thread{
         {
            this.initializeTransaction();
         }
+      
+         boolean escapeServerResponse = false;
         
         private void initializeTransaction()
         {
@@ -132,12 +134,19 @@ public class Simulator extends Thread{
                 {
             //send the packet to the server
                 sendToServer();
+                   
+                   
+             if(!this.escapeServerResponse)
+             {
             //wait for response from the server
                 getServerResponse();
             //construct a client packet
                 this.toClientPacket = new DatagramPacket(this.fromServerPacket.getData(), this.fromServerPacket.getLength(), this.client);
             //send the response to the client
                 sendToClient();
+             }else{ this.escapeServerResponse = !this.escapeServerResponse;} 
+                   
+                   
             //wait for response from the client
                 getClientResponse();
                 this.toServerPacket = new DatagramPacket(this.fromClientPacket.getData(), this.fromClientPacket.getLength(), this.server);
