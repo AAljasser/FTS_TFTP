@@ -197,6 +197,7 @@ public class Simulator extends Thread{
                     break;
                 case "2":
                     System.out.println("\t ****LOSING PACKET #"+this.clientPacketSentCounter+" FROM CLIENT");
+                     this.escapeServerResponse = !this.escapeServerResponse;
                     return;
                 case "3":
                     System.out.println("\t ****SENDING A DUPLICATE OF PACKET #"+this.clientPacketSentCounter+" TO SERVER");
