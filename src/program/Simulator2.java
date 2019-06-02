@@ -100,7 +100,7 @@ public class Simulator2 {
 			//check the size to terminate when size < 512
 			receivedSize = receivePacket.getLength();
 			
-			//sendPacket to the client	
+			//Step : sendPacket to the client	
 			//at this moment server waits for response, packet could be lost/duplicated/etc
 			sendPacket(clientSocket, clientPort, SERVER_ID, "step 4");
 			
