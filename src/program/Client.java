@@ -1,3 +1,6 @@
+
+//SIMULATOR V2.0
+
 package program;
 
 import java.net.DatagramSocket;
@@ -9,8 +12,9 @@ import utilities.client.*;
 import utilities.packets.*;
 
 public class Client {
-
-	protected static final String PATH = "C:\\Users\\AyeJay\\Desktop\\files\\";
+	
+	//protected static final boolean VERBOSE = false;
+	protected static final String PATH = "C:\\Jose\\Java\\files\\";
 	protected static final int MAX_CAPACITY = 512;
 
 	protected int serverPort;
