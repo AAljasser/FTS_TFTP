@@ -97,7 +97,7 @@ public class Simulator2 {
 			receivePacket(serverSocket,"step 3");
 			
 					
-			//check the size to terminate when size < 512
+			//check the size to terminate when size < 512 and when request == READ
 			receivedSize = receivePacket.getLength();
 			
 			//Step : sendPacket to the client	
