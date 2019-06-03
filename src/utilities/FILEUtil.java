@@ -25,11 +25,13 @@ import java.util.*;
 
 
 public final class FILEUtil {
+	private static final Exception FileExistsException = null;
 	private static int MAX_SIZE = 508;
 	private File loadedFile;
 	private byte[][] FBreak; //File Break down
 	private byte[] sData;
 	private int length; //Number of 508 Byte array's
+	private boolean OW = false;
 	
 	public FILEUtil(String fileDIR) throws FileNotFoundException {
 		this.loadedFile = new File(fileDIR);  
@@ -75,7 +77,8 @@ public final class FILEUtil {
 
 	}
 	
-	public FILEUtil(byte[][] incData) {
+	public FILEUtil(byte[][] incData, String dir, boolean doOW) throws Exception {
+		this.OW = doOW;
 		FBreak = incData;
 		int totalSize; //Total size of incoming Data
 		
@@ -90,6 +93,37 @@ public final class FILEUtil {
 				sData[x] = incData[i][z]; //Going through each byte
 			}
 		}
+		
+		this.loadedFile = new File(dir);
+		
+		
+		if(this.loadedFile.exists() && !OW) {
+			throw FileExistsException;
+		}
+		System.out.println(this.loadedFile.getTotalSpace());
+		
+		
+		
+		if(!this.loadedFile.exists() || OW) {
+			try(FileOutputStream sFile = new FileOutputStream(this.loadedFile)) {
+				if(!this.loadedFile.exists()) {
+					this.loadedFile.createNewFile();
+				}
+			
+				sFile.write(sData);
+				sFile.flush();
+				sFile.close();	
+			} catch (FileNotFoundException e) {
+				System.out.println("File Not Found, exiting...");
+				e.printStackTrace();
+				System.exit(1);
+			} catch (IOException e) {
+				System.out.println("IOException at sFile write/close, exiting...");
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+		
 	}
 	
 	public byte[][] getData(){
@@ -98,33 +132,4 @@ public final class FILEUtil {
 	public int getLength() {
 		return this.length;
 	}
-	//TODO: DIR must have name file too.
-	public void saveFile(String dir) {
-		this.loadedFile = new File(dir);
-		
-		
-		
-		try(FileOutputStream sFile = new FileOutputStream(this.loadedFile)) {
-			if(!this.loadedFile.exists()) {
-				this.loadedFile.createNewFile();
-			}
-			
-			sFile.write(sData);
-			sFile.flush();
-			sFile.close();	
-		} catch (FileNotFoundException e) {
-			System.out.println("File Not Found, exiting...");
-			e.printStackTrace();
-			System.exit(1);
-		} catch (IOException e) {
-			System.out.println("IOException at sFile write/close, exiting...");
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-	
-	public static void main(String[] args) {
-		
-	}
-	
 }
