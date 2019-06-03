@@ -71,8 +71,12 @@ public class ServerWR extends Server {
 				e.printStackTrace();
 			}
 		}
-		this.loadedFile = new FILEUtil(Arrays.copyOfRange(temp,0,bNum));
-		this.loadedFile.saveFile(dir+this.fileName);
+		try {
+			this.loadedFile = new FILEUtil(Arrays.copyOfRange(temp,0,bNum),dir+this.fileName,false);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

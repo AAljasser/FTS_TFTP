@@ -59,9 +59,9 @@ public final class TFTPUtil {
 	 * @param packet
 	 * @param msj
 	 */
-	public static void send(DatagramSocket socket, DatagramPacket packet, String msj) {
+	public static void send(DatagramSocket socket, DatagramPacket packet, String msj/*, boolean verbose*/) {
 
-		System.out.println(msj);
+		//if(verbose) System.out.println(msj);
 
 		try {
 			socket.send(packet);
@@ -70,6 +70,7 @@ public final class TFTPUtil {
 			System.exit(1);
 		}
 
+		//if(verbose) System.out.println("packet sent");
 	}
 
 	/**
@@ -80,9 +81,9 @@ public final class TFTPUtil {
 	 * @param packet
 	 * @param msj
 	 */
-	public static void receive(DatagramSocket socket, DatagramPacket packet, String msj) {
+	public static void receive(DatagramSocket socket, DatagramPacket packet, String msj,  boolean verbose) {
 
-		System.out.println(msj);
+		//if(verbose)System.out.println(msj);
 
 		try {
 			// Block until a datagram is received via sendReceiveSocket.
@@ -92,6 +93,7 @@ public final class TFTPUtil {
 			System.exit(1);
 		}
 
+		//if(verbose) System.out.println("packet received");
 	}
 	
 	//METHODS TO CREATE DATAGRAMPACKETS;
