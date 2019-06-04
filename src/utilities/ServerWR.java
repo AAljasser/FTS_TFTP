@@ -58,6 +58,14 @@ public class ServerWR extends Server {
 					bNum++;
 					if(this.packet.getLength()<512) {
 						run = -1;
+						this.aPack = new ACKPacket(bNum);
+						this.aPack.setDatagramPacket(this.cAdd, this.cPort);
+						
+						try {
+							this.socket.send(this.aPack.getDatagramPacket());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 				tNum=0;
