@@ -67,7 +67,9 @@ public class ServerRR extends Server {
 				this.socket.receive(this.packet);
 				this.aPack = new ACKPacket(this.packet.getData(),this.packet.getLength());
 				
-				if(bNum == this.aPack.getIntBN()) bNum++;
+				if(bNum == this.aPack.getIntBN()) {
+					bNum++;
+				}
 				tNum = 0;
 			} catch (SocketTimeoutException e1) {
 				System.out.println("ACK receive timed-out... retrying");

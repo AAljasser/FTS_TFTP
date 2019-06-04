@@ -68,9 +68,12 @@ public class ClientRR extends Client {
 		
 		data = Arrays.copyOfRange(data, 0, blockNumber);
 
-		FILEUtil file = new FILEUtil(data);
-
-		file.saveFile(PATH + this.requestPacket.getFilename());
+		try {
+			FILEUtil file = new FILEUtil(data,PATH + this.requestPacket.getFilename(),true);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 

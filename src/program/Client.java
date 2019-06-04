@@ -14,7 +14,7 @@ import utilities.packets.*;
 public class Client {
 	
 	//protected static final boolean VERBOSE = false;
-	protected static final String PATH = "C:\\Jose\\Java\\files\\";
+	protected static final String PATH = "C:\\Users\\AyeJay\\Desktop\\files\\";
 	protected static final int MAX_CAPACITY = 512;
 
 	protected int serverPort;
@@ -28,7 +28,7 @@ public class Client {
 	// constructor
 	public Client() {
 		sendReceiveSocket = TFTPUtil.datagramSocket();
-		serverPort = 29;
+		serverPort = 69;
 		try {
 			serverAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {

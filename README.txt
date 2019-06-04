@@ -5,24 +5,18 @@ Iteration #1 Submission
 Students (Roles):-
 Abdullrhman Aljasser (Code - Server) - 100988128
 Chance Abemba (Code - Error Simulator) - 101011372
-Muhanad alshabshabi (UML, Use Case, and State Diagram) - 
-100958798
-Majd Al Khany
- (UML, Use Case, and State Diagram) - 100977501
-Jose Franco (Code - Client) - 
+Muhanad alshabshabi (UML, Use Case, and State Diagram) - 100958798
+Majd Al Khany (UML, Use Case, and State Diagram) - 100977501
+Jose Franco (Code - Client) - 101016433
 
-Files:
-Files-> Test files used, subfolder named server is the dir used for sever.
-Client State Machine.png
-Iteration 1 Use Cases.pdf
-Server State Machine.png
-UML Diagram.png
-README.txt
+Test file found named as **files**
+
 
 Execution:
-**Must change Server and Client dir found up top**
-Run Server (An exit prompt will always be on, used to exit server)
-Run Client, follow prompt.
-
+*To run to server directly change serverPort to 69 (Client.java:27)
+**MUST** change directory for the testing file found at (Client.java:13) (Server.java:15)
+Run Server.java
+Run Simulator.java, follow console
+Run Client.java, follow prompt
 
 
