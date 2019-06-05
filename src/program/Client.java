@@ -1,10 +1,10 @@
-
 //SIMULATOR V2.0
 
 package program;
 
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import javax.swing.JOptionPane;
 import utilities.*;
@@ -27,8 +27,13 @@ public class Client {
 
 	// constructor
 	public Client() {
-		sendReceiveSocket = TFTPUtil.datagramSocket();
-		serverPort = 69;
+		try {
+			sendReceiveSocket = new DatagramSocket();
+		} catch (SocketException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		serverPort = 29;
 		try {
 			serverAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
