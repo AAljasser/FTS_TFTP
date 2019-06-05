@@ -70,7 +70,12 @@ public class Simulator2 {
 			receivePacket = new DatagramPacket(new byte[MAX_CAPACITY], MAX_CAPACITY);
 			clientSocket.receive(receivePacket);
 			
-			requestPacket = new RequestPacket(receivePacket.getData(), receivePacket.getLength());
+			try {
+				requestPacket = new RequestPacket(receivePacket.getData(), receivePacket.getLength());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 			requestType = requestPacket.getID();
 			
@@ -148,6 +153,7 @@ public class Simulator2 {
 			if(sendPacket.getLength() < 512) {
 				System.out.println("ending simulator...");
 				is512 = false;
+				
 			}
 			
 			System.out.println("packet sent...");
@@ -161,7 +167,13 @@ public class Simulator2 {
 		
 		boolean aux = false;
 		
-		DataPacket temp = new DataPacket(receivePacket.getData(), receivePacket.getLength());
+		DataPacket temp = null;
+		try {
+			temp = new DataPacket(receivePacket.getData(), receivePacket.getLength());
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		int packetNumber = temp.getIntBN();
 		
 		if(!packetsProcessed.contains(packetNumber) && packetNumber >= parameters.getFrom() && packetNumber <= parameters.getTo()) {

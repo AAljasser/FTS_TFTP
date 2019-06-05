@@ -1,7 +1,6 @@
 package utilities.packets;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import utilities.ArrayUtil;
 import utilities.TFTPUtil;
@@ -11,15 +10,30 @@ public class Packet {
 	private byte[] packet;
 	private DatagramPacket datagramPacket;
 	private byte[] id;
+	
+	private boolean isError;	
+	private ErrorPacket errorPacket;
 		
 	public Packet() {
 		
 	}
 	
-	public Packet(DatagramPacket datagramPacket) {
-		this.datagramPacket = datagramPacket;
-		setPacket(datagramPacket.getData());
-		setID(ArrayUtil.subArray(packet, 0, 2));		
+	public Packet(byte[] array, int length) {
+		byte[] id = ArrayUtil.subArray(array, 0, 2);
+		
+		if(id[0] == 0 && id[1] == 5) {
+			isError = true;
+			try {
+				errorPacket = new ErrorPacket(array, length);
+			} catch (Exception e) {
+				System.out.println("Error in Class Packet when creating this.errorPacket");
+				e.printStackTrace();
+			}
+		}
+		else {
+			errorPacket = null;
+			isError = false;
+		}
 	}
 		
 	public byte[] getPacket() {
@@ -51,5 +65,18 @@ public class Packet {
 	public byte[] getID() {
 		return id;
 	}
+
+	public ErrorPacket getErrorPacket() {
+		return errorPacket;
+	}
+	
+	public void setErrorPacket(ErrorPacket errorPacket) {
+		 this.errorPacket = errorPacket;
+	}
+	
+	public boolean isError() {
+		return isError;
+	}
+
 
 }

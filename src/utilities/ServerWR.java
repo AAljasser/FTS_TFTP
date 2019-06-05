@@ -23,7 +23,13 @@ public class ServerWR extends Server {
 	public ServerWR(DatagramPacket p) {
 		super(p);
 		// TODO Auto-generated constructor stub
-		RequestPacket temp = new RequestPacket(p.getData(), p.getLength());
+		RequestPacket temp = null;
+		try {
+			temp = new RequestPacket(p.getData(), p.getLength());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		this.fileName = temp.getFilename();
 		this.fileMode = temp.getMode();
 	}
@@ -51,7 +57,12 @@ public class ServerWR extends Server {
 			try {
 				this.socket.setSoTimeout(500);
 				this.socket.receive(this.packet);
-				this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
+				try {
+					this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				
 				if(bNum+1 == this.dPack.getIntBN()) {
 					temp[bNum] = this.dPack.getData();

@@ -50,7 +50,13 @@ public class ClientWR extends Client {
 			serverPort = dp.getPort();
 			serverAddress = dp.getAddress();
 	
-			ACKPacket temp = new ACKPacket(dp.getData(), dp.getLength());
+			ACKPacket temp = null;
+			try {
+				temp = new ACKPacket(dp.getData(), dp.getLength());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			System.out.println("GOT FIRST PACKET (REQUEST)  PACKET#" + temp.getIntBN());
 		} catch (IOException e3) {
 			// TODO Auto-generated catch block
@@ -85,7 +91,13 @@ public class ClientWR extends Client {
 				sendReceiveSocket.setSoTimeout(500);
 				sendReceiveSocket.receive(response); 
 				
-				ACKPacket ackPacket = new ACKPacket(response.getData(), response.getLength());
+				ACKPacket ackPacket = null;
+				try {
+					ackPacket = new ACKPacket(response.getData(), response.getLength());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				System.out.println("got it....");
 				System.out.println(i + " vs " +ackPacket.getIntBN());
 				
