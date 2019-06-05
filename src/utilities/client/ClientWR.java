@@ -54,9 +54,21 @@ public class ClientWR extends Client {
 			try {
 				temp = new ACKPacket(dp.getData(), dp.getLength());
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
+				ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
+				err.setDatagramPacket(serverAddress, serverPort);
+				
+				sendReceiveSocket.send(err.getDatagramPacket());
+				
 				e.printStackTrace();
+				System.exit(1);
 			}
+			
+			if(temp.isError()) {
+				System.out.println("Error Code:"+temp.getErrorPacket().getIntBN()+ temp.getErrorPacket().getMsg());
+				System.exit(1);
+			}
+			
+			
 			System.out.println("GOT FIRST PACKET (REQUEST)  PACKET#" + temp.getIntBN());
 		} catch (IOException e3) {
 			// TODO Auto-generated catch block
@@ -95,9 +107,19 @@ public class ClientWR extends Client {
 				try {
 					ackPacket = new ACKPacket(response.getData(), response.getLength());
 				} catch (Exception e) {
+					ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
+					err.setDatagramPacket(serverAddress, serverPort);
+					
+					sendReceiveSocket.send(err.getDatagramPacket());
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
+				if(ackPacket.isError()) {
+					System.out.println("Error Code:"+ackPacket.getErrorPacket().getIntBN()+ ackPacket.getErrorPacket().getMsg());
+					System.exit(1);
+				}
+				
 				System.out.println("got it....");
 				System.out.println(i + " vs " +ackPacket.getIntBN());
 				

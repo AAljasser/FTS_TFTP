@@ -129,7 +129,8 @@ public class Simulator2 {
 				}
 				
 				try {
-					sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(), receivePacket.getAddress(), clientPort);
+					//sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(), receivePacket.getAddress(), clientPort);
+					sendPacket = new DatagramPacket(new byte[45],45, receivePacket.getAddress(), clientPort);
 					clientSocket.send(sendPacket);
 					
 				} catch (IOException e) {

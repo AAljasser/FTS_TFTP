@@ -27,9 +27,24 @@ public class ServerWR extends Server {
 		try {
 			temp = new RequestPacket(p.getData(), p.getLength());
 		} catch (Exception e) {
+			ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
+			err.setDatagramPacket(this.cAdd, this.cPort);
+			
+			try {
+				this.socket.send(err.getDatagramPacket());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		if(temp.isError()) {
+			System.out.println("Error Code:"+temp.getErrorPacket().getIntBN()+ temp.getErrorPacket().getMsg());
+			System.exit(1);
+		}
+		
 		this.fileName = temp.getFilename();
 		this.fileMode = temp.getMode();
 	}
@@ -60,8 +75,22 @@ public class ServerWR extends Server {
 				try {
 					this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
 				} catch (Exception e1) {
+					ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
+					err.setDatagramPacket(this.cAdd, this.cPort);
+					
+					try {
+						this.socket.send(err.getDatagramPacket());
+					} catch (IOException ex) {
+						// TODO Auto-generated catch block
+						ex.printStackTrace();
+					}
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
+				}
+				
+				if(this.dPack.isError()) {
+					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ this.dPack.getErrorPacket().getMsg());
+					System.exit(1);
 				}
 				
 				if(bNum+1 == this.dPack.getIntBN()) {
