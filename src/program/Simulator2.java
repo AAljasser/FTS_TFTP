@@ -52,7 +52,7 @@ public class Simulator2 {
 		getRequest();
 		
 		if(isRead) {
-			//readSequence();
+			readSequence();
 		}
 		
 		else {
@@ -129,8 +129,7 @@ public class Simulator2 {
 				}
 				
 				try {
-					//sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(), receivePacket.getAddress(), clientPort);
-					sendPacket = new DatagramPacket(new byte[45],45, receivePacket.getAddress(), clientPort);
+					sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(), receivePacket.getAddress(), clientPort);
 					clientSocket.send(sendPacket);
 					
 				} catch (IOException e) {
@@ -154,7 +153,6 @@ public class Simulator2 {
 			if(sendPacket.getLength() < 512) {
 				System.out.println("ending simulator...");
 				is512 = false;
-				
 			}
 			
 			System.out.println("packet sent...");
@@ -168,7 +166,7 @@ public class Simulator2 {
 		
 		boolean aux = false;
 		
-		DataPacket temp = null;
+		DataPacket temp=null;
 		try {
 			temp = new DataPacket(receivePacket.getData(), receivePacket.getLength());
 		} catch (Exception e1) {
@@ -180,7 +178,7 @@ public class Simulator2 {
 		if(!packetsProcessed.contains(packetNumber) && packetNumber >= parameters.getFrom() && packetNumber <= parameters.getTo()) {
 			manipulatePacket(receivePacket, serverSocket, packetNumber);
 			
-			aux = false;
+			aux = true;
 			
 		}
 	
@@ -195,6 +193,64 @@ public class Simulator2 {
 		}
 		
 		return aux;
+	}
+	
+	
+	private void readSequence() {
+
+		boolean is512 = true;
+		boolean packetLost = false;
+
+		try {
+			sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),	InetAddress.getLocalHost(), 69);
+			serverSocket.send(sendPacket);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("sent request...");
+
+		while (is512) {
+
+			try {
+				receivePacket = new DatagramPacket(new byte[MAX_CAPACITY], MAX_CAPACITY);
+				serverSocket.receive(receivePacket);
+				serverPort = receivePacket.getPort();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			packetLost = sendToClientOnRead();
+			
+
+			if (!packetLost) {
+
+				System.out.println("packet is safe...");
+
+				try {
+					receivePacket = new DatagramPacket(new byte[MAX_CAPACITY], MAX_CAPACITY);
+					clientSocket.receive(receivePacket);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				try {
+					sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(), receivePacket.getAddress(), serverPort);
+					serverSocket.send(sendPacket);
+					
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				
+
+				System.out.println("packet sent...");
+
+			}
+		}
 	}
 	
 	
@@ -235,6 +291,35 @@ public class Simulator2 {
 		return operationID;
 	}
 
+	private boolean sendToClientOnRead() {
+		boolean aux = false;
+		
+		DataPacket temp = null;
+		try {
+			temp = new DataPacket(receivePacket.getData(), receivePacket.getLength());
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		int packetNumber = temp.getIntBN();
+		
+		if(!packetsProcessed.contains(packetNumber) && packetNumber >= parameters.getFrom() && packetNumber <= parameters.getTo()) {
+			manipulatePacket(receivePacket, clientSocket, packetNumber);
+			
+			aux = true;
+			
+		}
+			
+		try {
+			sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(), receivePacket.getAddress(), clientPort);			
+			clientSocket.send(sendPacket);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return aux;		
+	}
 	
 	
 	

@@ -93,6 +93,19 @@ public class ServerWR extends Server {
 					System.exit(1);
 				}
 				
+				/*if(this.dPack.getDatagramPacket().getPort() != this.cPort) {
+					ErrorPacket err = new ErrorPacket(5, "Incorrect TID");
+					err.setDatagramPacket(this.cAdd, this.cPort);
+					
+					try {
+						this.socket.send(err.getDatagramPacket());
+					} catch (IOException ex) {
+						// TODO Auto-generated catch block
+						ex.printStackTrace();
+					}
+					break;
+				}*/
+				
 				if(bNum+1 == this.dPack.getIntBN()) {
 					temp[bNum] = this.dPack.getData();
 					bNum++;
