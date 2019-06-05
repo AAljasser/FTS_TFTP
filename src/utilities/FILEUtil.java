@@ -106,16 +106,16 @@ public final class FILEUtil {
 			throw FileException;
 		}
 		
-		if(incData.length*508 > this.loadedFile.getFreeSpace()) {
+		if(incData.length*508 > this.loadedFile.getParentFile().getFreeSpace()) {
 			FileException = new IOException("SErr"); //No space Error
 			throw FileException;
 		}
 		
-		if(!this.loadedFile.canWrite()) {
+		if(!this.loadedFile.canWrite() && this.loadedFile.exists()) {
 			FileException = new IOException("WErr"); //Can't write Error
 			throw FileException;
 		}
-		System.out.println(this.loadedFile.getFreeSpace());
+
 		
 		
 		

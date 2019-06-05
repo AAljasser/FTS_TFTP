@@ -28,7 +28,7 @@ public class Client {
 	// constructor
 	public Client() {
 		sendReceiveSocket = TFTPUtil.datagramSocket();
-		serverPort = 29;
+		serverPort = 69;
 		try {
 			serverAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
