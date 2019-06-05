@@ -42,7 +42,13 @@ public class ClientRR extends Client {
 			try {
 				sendReceiveSocket.setSoTimeout(500);
 				sendReceiveSocket.receive(dgp);
-				DataPacket response = new DataPacket(dgp.getData(), dgp.getLength());
+				DataPacket response = null;
+				try {
+					response = new DataPacket(dgp.getData(), dgp.getLength());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
 				ACKPacket ack = new ACKPacket(response.getIntBN());
 				ack.setDatagramPacket(dgp.getAddress(), dgp.getPort()); 
