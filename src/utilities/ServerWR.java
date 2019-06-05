@@ -56,6 +56,7 @@ public class ServerWR extends Server {
 				if(bNum+1 == this.dPack.getIntBN()) {
 					temp[bNum] = this.dPack.getData();
 					bNum++;
+					System.out.println(this.packet.getLength());
 					if(this.packet.getLength()<512) {
 						run = -1;
 						this.aPack = new ACKPacket(bNum);
