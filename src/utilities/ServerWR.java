@@ -23,7 +23,28 @@ public class ServerWR extends Server {
 	public ServerWR(DatagramPacket p) {
 		super(p);
 		// TODO Auto-generated constructor stub
-		RequestPacket temp = new RequestPacket(p.getData(), p.getLength());
+		RequestPacket temp = null;
+		try {
+			temp = new RequestPacket(p.getData(), p.getLength());
+		} catch (Exception e) {
+			ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
+			err.setDatagramPacket(this.cAdd, this.cPort);
+			
+			try {
+				this.socket.send(err.getDatagramPacket());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if(temp.isError()) {
+			System.out.println("Error Code:"+temp.getErrorPacket().getIntBN()+ temp.getErrorPacket().getMsg());
+			System.exit(1);
+		}
+		
 		this.fileName = temp.getFilename();
 		this.fileMode = temp.getMode();
 	}
@@ -51,13 +72,54 @@ public class ServerWR extends Server {
 			try {
 				this.socket.setSoTimeout(500);
 				this.socket.receive(this.packet);
-				this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
+				try {
+					this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
+				} catch (Exception e1) {
+					ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
+					err.setDatagramPacket(this.cAdd, this.cPort);
+					
+					try {
+						this.socket.send(err.getDatagramPacket());
+					} catch (IOException ex) {
+						// TODO Auto-generated catch block
+						ex.printStackTrace();
+					}
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				if(this.dPack.isError()) {
+					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ this.dPack.getErrorPacket().getMsg());
+					System.exit(1);
+				}
+				
+				/*if(this.dPack.getDatagramPacket().getPort() != this.cPort) {
+					ErrorPacket err = new ErrorPacket(5, "Incorrect TID");
+					err.setDatagramPacket(this.cAdd, this.cPort);
+					
+					try {
+						this.socket.send(err.getDatagramPacket());
+					} catch (IOException ex) {
+						// TODO Auto-generated catch block
+						ex.printStackTrace();
+					}
+					break;
+				}*/
 				
 				if(bNum+1 == this.dPack.getIntBN()) {
 					temp[bNum] = this.dPack.getData();
 					bNum++;
+					System.out.println(this.packet.getLength());
 					if(this.packet.getLength()<512) {
 						run = -1;
+						this.aPack = new ACKPacket(bNum);
+						this.aPack.setDatagramPacket(this.cAdd, this.cPort);
+						
+						try {
+							this.socket.send(this.aPack.getDatagramPacket());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 				tNum=0;

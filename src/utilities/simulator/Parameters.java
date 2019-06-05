@@ -15,30 +15,17 @@ public class Parameters {
 							return id;
 						}
 	};
-	public enum Who{CLIENT(1), SERVER(2);
-			
-						private int id;
-						
-						private Who(int id) {
-							this.id = id;
-						}
-		
-						public int getID() {
-							return id;
-						}
-	};
+
 	 
 	private int from;
 	private int to;
-	private Who who;
 	private Operation operation;
 	
 	public Parameters() {
 	
 	}
 	
-	public void getInfo() {		
-		who = queryForWho();
+	public void getInfo() {	
 		operation = queryForOperation();
 		from = queryForPackets(true);
 		to = queryForPackets(false);
@@ -51,14 +38,6 @@ public class Parameters {
 		return Operation.valueOf(stringTemp.toUpperCase());
 	}
 
-
-	private Who queryForWho() {
-		String stringTemp = JOptionPane.showInputDialog(null, "Who experiences? (Client, Server)", "Simulator", JOptionPane.DEFAULT_OPTION);
-		
-		Who  who = Who.valueOf(stringTemp.toUpperCase());
-		
-		return who;
-	}
 
 
 	private int queryForPackets(boolean isFrom) {
@@ -88,9 +67,7 @@ public class Parameters {
 		return to;
 	}
 
-	public int getWhoID() {
-		return who.getID();
-	}
+
 
 	public String getOperationName() {
 		return operation.toString();

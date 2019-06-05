@@ -25,7 +25,7 @@ import java.util.*;
 
 
 public final class FILEUtil {
-	private static final Exception FileExistsException = null;
+	private static IOException FileException = null;
 	private static int MAX_SIZE = 508;
 	private File loadedFile;
 	private byte[][] FBreak; //File Break down
@@ -39,8 +39,11 @@ public final class FILEUtil {
 		byte[] fByte = new byte[(int) this.loadedFile.length()];
 		FileInputStream fStream = null;
 		
+		
+		
 		try {fStream = new FileInputStream(this.loadedFile);}
 		catch(FileNotFoundException x) { throw x;}
+		
 		
 		try {
 			fStream.read(fByte);
@@ -77,7 +80,8 @@ public final class FILEUtil {
 
 	}
 	
-	public FILEUtil(byte[][] incData, String dir, boolean doOW) throws Exception {
+	public FILEUtil(byte[][] incData, String dir, boolean doOW) throws IOException {
+		boolean abort = false;
 		this.OW = doOW;
 		FBreak = incData;
 		int totalSize; //Total size of incoming Data
@@ -98,9 +102,20 @@ public final class FILEUtil {
 		
 		
 		if(this.loadedFile.exists() && !OW) {
-			throw FileExistsException;
+			FileException = new IOException("OWErr"); //Can't overwrite due to permission set
+			throw FileException;
 		}
-		System.out.println(this.loadedFile.getTotalSpace());
+		
+		if(incData.length*508 > this.loadedFile.getParentFile().getFreeSpace()) {
+			FileException = new IOException("SErr"); //No space Error
+			throw FileException;
+		}
+		
+		if(!this.loadedFile.canWrite() && this.loadedFile.exists()) {
+			FileException = new IOException("WErr"); //Can't write Error
+			throw FileException;
+		}
+
 		
 		
 		

@@ -10,6 +10,7 @@ public class RequestPacket extends Packet{
 	
 	
 	public RequestPacket(Request request, String filename, String mode) {
+		this.setErrorPacket(null);
 		this.request = request;
 		this.filename = filename;
 		this.mode = mode;	
@@ -25,14 +26,57 @@ public class RequestPacket extends Packet{
 	 * }
 	 */
 	
-	public RequestPacket(byte[] array, int length) {
-		byte[] packet = ArrayUtil.subArray(array, 0, length);
-		this.setPacket(packet);
-		request = extractRequest(packet);
-		filename = extractFilename(packet);
-		mode = extractMode(packet);
-		this.setID(extractID(packet));
+	public RequestPacket(byte[] array, int length) throws Exception   {
+		super(array, length);
 		
+		if(!this.isError()) {
+			byte[] packet = ArrayUtil.subArray(array, 0, length);		
+			if(validatePacket(packet)) {
+				this.setPacket(packet);
+				request = extractRequest(packet);
+				filename = extractFilename(packet);
+				mode = extractMode(packet);
+				this.setID(extractID(packet));
+			}
+			
+			else throw new Exception("Invalid RequestPacket format");
+		}
+		
+	}
+	
+	private boolean validatePacket(byte[] packet)  {
+		
+		//request Packets must be at least 4 bytes (id = 2 bytes, separator = 2 bytes , mode= x bytes, filename = x bytes)
+		//it really should be at least 12 bytes (because ... mode 5 bytes min, filename = 3 bytes min)
+		//thinking that mode will always be 'octet'
+		
+		//packet length must be in the range 4 to 512
+		if(packet.length < 4 || packet.length > 512) return false;
+		
+		//id bytes must be 0 and 1 or 2
+		//packet[0] must be zero
+		//packet[1] must be in the range 1 to 2
+		else if(packet[0] != 0 || packet[1] < 1 || packet[1] > 2) return false;
+		
+		//check for filename and mode;
+		//find the zeros second zero should be last byte on the array;	
+		//if not packet is corrupted
+		int secondZeroIndex = -1;
+		boolean findFirst = false;
+		
+		for(int i = 2 ; i < packet.length ; i ++) {
+			if(!findFirst && packet[i] == 0) findFirst = true;
+			
+			else if(findFirst && packet[i] == 0) { 
+				secondZeroIndex = i;			
+				break;
+			}
+		}
+		
+		//if the index of the second zero is not the last byte on the array ...
+		if(secondZeroIndex != packet.length-1) return false;
+		
+		return true;
 	}
 	
 	public Request getRequest() {

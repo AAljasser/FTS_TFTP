@@ -1,7 +1,6 @@
 package utilities.client;
 
 import utilities.FILEUtil;
-import utilities.TFTPUtil;
 import utilities.packets.*;
 
 import java.io.IOException;
@@ -24,7 +23,12 @@ public class ClientRR extends Client {
 	private void transfer() {
 		this.requestPacket.setDatagramPacket(serverAddress, serverPort);
 
-		TFTPUtil.send(sendReceiveSocket, this.requestPacket.getDatagramPacket(), "Trying to connect to server...");
+		try {
+			sendReceiveSocket.send( this.requestPacket.getDatagramPacket());
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
 
 		boolean is512 = true;
 		byte[][] data = new byte[1024][];
@@ -33,16 +37,25 @@ public class ClientRR extends Client {
 		
 		while (is512) {
 
-			DatagramPacket dgp = TFTPUtil.datagramPacket(MAX_CAPACITY);
+			DatagramPacket dgp = new DatagramPacket(new byte[MAX_CAPACITY], MAX_CAPACITY);
 
 			try {
 				sendReceiveSocket.setSoTimeout(500);
-				sendReceiveSocket.receive( dgp);
-				DataPacket response = new DataPacket(dgp.getData(), dgp.getLength());
+				sendReceiveSocket.receive(dgp);
+				DataPacket response = null;
+				try {
+					response = new DataPacket(dgp.getData(), dgp.getLength());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
 				ACKPacket ack = new ACKPacket(response.getIntBN());
-				ack.setDatagramPacket(dgp.getAddress(), dgp.getPort());
-				TFTPUtil.send(sendReceiveSocket, ack.getDatagramPacket(), "Sending ACK # " + response.getIntBN());
+				ack.setDatagramPacket(dgp.getAddress(), dgp.getPort()); 
+				 
+				
+				sendReceiveSocket.send(ack.getDatagramPacket());
+				//TFTPUtil.send(sendReceiveSocket, ack.getDatagramPacket(), "Sending ACK # " + response.getIntBN());
 
 				if (response.getIntBN() == blockNumber) {
 
@@ -68,9 +81,12 @@ public class ClientRR extends Client {
 		
 		data = Arrays.copyOfRange(data, 0, blockNumber);
 
-		FILEUtil file = new FILEUtil(data);
-
-		file.saveFile(PATH + this.requestPacket.getFilename());
+		try {
+			FILEUtil file = new FILEUtil(data,PATH + this.requestPacket.getFilename(),true);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 

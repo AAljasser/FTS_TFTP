@@ -9,7 +9,6 @@ import java.net.SocketTimeoutException;
 
 import program.*;
 import utilities.FILEUtil;
-import utilities.TFTPUtil;
 import utilities.packets.*;
 
 public class ClientWR extends Client {
@@ -17,9 +16,8 @@ public class ClientWR extends Client {
 	private RequestPacket requestPacket;
 	private FILEUtil file;
 	private byte[][] data;
-	private int responsePort;
-	private InetAddress responseAddress;
-
+	private DataPacket dataPacket = null;
+	
 	public ClientWR(RequestPacket requestPacket) {
 
 		this.requestPacket = requestPacket;
@@ -31,8 +29,6 @@ public class ClientWR extends Client {
 		}
 
 		data = file.getData();
-		responsePort = -1;
-
 		transfer();
 	}
 
@@ -40,36 +36,97 @@ public class ClientWR extends Client {
 		//sending request...
 		this.requestPacket.setDatagramPacket(serverAddress, serverPort);
 
-		TFTPUtil.send(sendReceiveSocket, this.requestPacket.getDatagramPacket(), "Trying to connect to server...");
-
+		try {
+			sendReceiveSocket.send(requestPacket.getDatagramPacket());
+		} catch (IOException e3) {
+			// TODO Auto-generated catch block
+			e3.printStackTrace();
+		}
+		
+		DatagramPacket dp = new DatagramPacket(new byte[512], 512);
+		
+		try {
+			sendReceiveSocket.receive(dp);
+			serverPort = dp.getPort();
+			serverAddress = dp.getAddress();
+	
+			ACKPacket temp = null;
+			try {
+				temp = new ACKPacket(dp.getData(), dp.getLength());
+			} catch (Exception e) {
+				ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
+				err.setDatagramPacket(serverAddress, serverPort);
+				
+				sendReceiveSocket.send(err.getDatagramPacket());
+				
+				e.printStackTrace();
+				System.exit(1);
+			}
+			
+			if(temp.isError()) {
+				System.out.println("Error Code:"+temp.getErrorPacket().getIntBN()+ temp.getErrorPacket().getMsg());
+				System.exit(1);
+			}
+			
+			
+			System.out.println("GOT FIRST PACKET (REQUEST)  PACKET#" + temp.getIntBN());
+		} catch (IOException e3) {
+			// TODO Auto-generated catch block
+			e3.printStackTrace();
+		}
+		
+		
+		
 		//writing file...
 		System.out.println("Writing File...");
-		int i = 0;
+		int i = 1;
 		int tNum = 0;
 
 		//this loop will first get response from server then if no time out, will send a packet
-		while (i < data.length) {
+		while (i < data.length + 1) {
 
-			DatagramPacket response = TFTPUtil.datagramPacket(4);
+			dataPacket = new DataPacket(i , data[i - 1]);
+			dataPacket.setDatagramPacket(serverAddress, serverPort);
+			System.out.println("");
+			
+			try {
+				sendReceiveSocket.send(dataPacket.getDatagramPacket());
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			
+			
+			DatagramPacket response = new DatagramPacket(new byte[4], 4);
 
 			try {
 				sendReceiveSocket.setSoTimeout(500);
 				sendReceiveSocket.receive(response); 
-				ACKPacket ackPacket = new ACKPacket(response.getData(), response.getLength());
-
-				if(ackPacket.getIntBN() == 0) {
-					responseAddress = response.getAddress();
-					responsePort = response.getPort();
+				
+				ACKPacket ackPacket = null;
+				try {
+					ackPacket = new ACKPacket(response.getData(), response.getLength());
+				} catch (Exception e) {
+					ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
+					err.setDatagramPacket(serverAddress, serverPort);
+					
+					sendReceiveSocket.send(err.getDatagramPacket());
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				if (i == ackPacket.getIntBN()) {
+				
+				if(ackPacket.isError()) {
+					System.out.println("Error Code:"+ackPacket.getErrorPacket().getIntBN()+ ackPacket.getErrorPacket().getMsg());
+					System.exit(1);
+				}
+				
+				System.out.println("got it....");
+				System.out.println(i + " vs " +ackPacket.getIntBN());
+				
+				
+				if (i == ackPacket.getIntBN() ) {
 					i++;
 				}				
-				
-				DataPacket dp = new DataPacket(i , data[i -1]);
-
-				dp.setDatagramPacket(responseAddress, responsePort);
-
-				TFTPUtil.send(sendReceiveSocket, dp.getDatagramPacket(), "Sending Packet #" + dp.getIntBN());
 				
 				tNum = 0;
 			} catch (SocketTimeoutException e1) {

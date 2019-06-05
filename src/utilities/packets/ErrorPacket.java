@@ -1,13 +1,15 @@
 package utilities.packets;
 import utilities.ArrayUtil;
+import utilities.BlockNum;
 
 public class ErrorPacket extends Packet{
 	
-	private int errorCode;
+	private BlockNum errorCode;
 	private String msg;
 
+
 	public ErrorPacket(int errorCode, String msg) {
-		this.errorCode = errorCode;
+		this.errorCode = new BlockNum(errorCode);
 		this.msg = msg;
 		this.setPacket(constructPacket());
 	}
@@ -20,12 +22,20 @@ public class ErrorPacket extends Packet{
 	public ErrorPacket(byte[] array, int length) {
 		byte[] packet = ArrayUtil.subArray(array, 0, length);
 		this.setPacket(packet);
-		errorCode = this.extractErrorCode(packet);
+		errorCode = new BlockNum(this.extractErrorCode(packet));
 		msg = this.extractMSG(packet);
 	}
 	
-	public int getErrorCode() {
+	public BlockNum getErrorCode() {
 		return errorCode;
+	}
+	
+	public int getIntBN() {
+		return errorCode.getInt();
+	}
+	
+	public byte[] getBytesBN() {
+		return errorCode.getByte();				
 	}
 
 	public String getMsg() {
@@ -35,7 +45,7 @@ public class ErrorPacket extends Packet{
 	public byte[]  constructPacket() {	
 		byte[] id = new byte[2];
 		byte[] end = {0};
-		byte[] errCodeArray = ArrayUtil.intToBytes(errorCode);
+		byte[] errCodeArray = errorCode.getByte();
 		
 		id[0] = 0;
 		id[1] = 5;

@@ -1,10 +1,10 @@
-
 //SIMULATOR V2.0
 
 package program;
 
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import javax.swing.JOptionPane;
 import utilities.*;
@@ -14,7 +14,7 @@ import utilities.packets.*;
 public class Client {
 	
 	//protected static final boolean VERBOSE = false;
-	protected static final String PATH = "C:\\Jose\\Java\\files\\";
+	protected static final String PATH = "C:\\Users\\AyeJay\\Desktop\\files\\";
 	protected static final int MAX_CAPACITY = 512;
 
 	protected int serverPort;
@@ -27,7 +27,12 @@ public class Client {
 
 	// constructor
 	public Client() {
-		sendReceiveSocket = TFTPUtil.datagramSocket();
+		try {
+			sendReceiveSocket = new DatagramSocket();
+		} catch (SocketException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		serverPort = 29;
 		try {
 			serverAddress = InetAddress.getLocalHost();
