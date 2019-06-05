@@ -150,9 +150,19 @@ public class Simulator2 {
 			
 			packetLost = sendToServerOnWrite();
 			
+			
+			//TODO: DO THIS CHECK ON readSequence method;
+			//warning : this block should work in theory, we havent tested it
 			if(sendPacket.getLength() < 512) {
 				System.out.println("ending simulator...");
 				is512 = false;
+				
+				try {
+					serverSocket.receive(sendPacket);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 			System.out.println("packet sent...");
@@ -176,9 +186,12 @@ public class Simulator2 {
 		int packetNumber = temp.getIntBN();
 		
 		if(!packetsProcessed.contains(packetNumber) && packetNumber >= parameters.getFrom() && packetNumber <= parameters.getTo()) {
-			manipulatePacket(receivePacket, serverSocket, packetNumber);
+			Integer val = manipulatePacket(receivePacket, serverSocket, packetNumber);
 			
 			aux = true;
+			//TODO: DO THIS CHECK ON sendToCLientOnWrite();...
+			//warning : this block should work in theory, we havent tested it
+			if(val == null) return aux;
 			
 		}
 	
@@ -299,6 +312,7 @@ public class Simulator2 {
 			temp = new DataPacket(receivePacket.getData(), receivePacket.getLength());
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
+			
 			e1.printStackTrace();
 		}
 		int packetNumber = temp.getIntBN();
