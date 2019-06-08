@@ -81,6 +81,10 @@ public class ServerRR extends Server {
 				if(bNum == this.aPack.getIntBN()) {
 					bNum++;
 				}
+				
+				if(bNum == temp.length) {
+					System.out.println("LAST PACKET SENT IS #: " + aPack.getIntBN());
+				}
 				tNum = 0;
 			} catch (SocketTimeoutException e1) {
 				System.out.println("ACK receive timed-out... retrying");
