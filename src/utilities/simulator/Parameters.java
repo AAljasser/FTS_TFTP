@@ -1,64 +1,76 @@
 package utilities.simulator;
 
+import java.util.Scanner;
+
 import javax.swing.JOptionPane;
 
 public class Parameters {
-	public enum Operation{NOTHING(0), DELAY(1), DUPLICATE(2),  LOST(3);
+	public enum Operation{DELAY(1, "delay"), DUPLICATE(2, "duplicate"),  LOST(3, "lost"),
+		OPCODEERROR(4, "op code error"), BLOCKNUM(5, "block num error"), IDERROR(6, "id error");
 		
 						private int id;
+						private String name;
 						
-						private Operation(int id) {
+						private Operation(int id, String name) {
 							this.id = id;
+							this.name = name;
 						}
 						
 						public int getID() {
 							return id;
 						}
+						
+						public String getName() {
+							return name;
+						}
 	};
 
-	 
+	public enum PacketType{DATAPACKET(1, "datapacket"), ACKPACKET(2, "ackpacket");
+		
+		private int id;
+		private String name;
+		private PacketType(int id, String name) {
+			this.id = id;
+			this.name = name;
+		}
+		
+		public int getID() {
+			return id;
+		}
+		
+		public String getName() {
+			return name;
+		}
+};
+	
+	private Scanner scanner = new Scanner(System.in);
 	private int from;
 	private int to;
 	private Operation operation;
+	private PacketType packetType;
 	
 	public Parameters() {
 	
 	}
 	
-	public void getInfo() {	
-		operation = queryForOperation();
-		from = queryForPackets(true);
-		to = queryForPackets(false);
-	}
-
+	public void getInfo() {
 	
-	private Operation queryForOperation() {
-		String stringTemp = JOptionPane.showInputDialog(null, "Enter Operation (Nothing, Delay, Duplicate, Lost)", "Simulator", JOptionPane.DEFAULT_OPTION);
+		System.out.println("Which operation you want to perfom?");
+		System.out.println("type:\n1 for delay\n2 for duplicate\n3 for lose\n4 for op code error\n5 for blockNum error\n6 for id error");
+		operation = Operation.values()[scanner.nextInt() - 1];
 		
-		return Operation.valueOf(stringTemp.toUpperCase());
-	}
-
-
-
-	private int queryForPackets(boolean isFrom) {
-		String auxiliar = (isFrom) ? "From: " : "To: ";
+		System.out.println("What type of packets you want to affect?");
+		System.out.println("type:\n1 for DataPackets\n2 for ACKPackets");
+		packetType = PacketType.values()[scanner.nextInt() - 1];
 		
-		String stringTemp = JOptionPane.showInputDialog(null, auxiliar, "Simulator", JOptionPane.DEFAULT_OPTION);
+		System.out.println("From which packet you want to start?");
+		from = scanner.nextInt();
 		
-		int value = Integer.parseInt(stringTemp);
+		System.out.println("In what packet you want to stop?");
+		to = scanner.nextInt();
 		
-		//cannot lose the very first packet from client size only
-		//if we do it would be like if the client did not sent anything in the first instance;
-		//only server CAN miss or delay the response to the very first packet
-		//if(isFrom && value == 0 && who.getID() == 2) {
-			//System.out.println("warning, loosing packet in server side w");
-			//value++; 
-		//}
-		
-		return value;
 	}
 	
-
 	public int getFrom() {		
 		return from;
 	}
@@ -66,16 +78,25 @@ public class Parameters {
 	public int getTo() {
 		return to;
 	}
-
-
+	
+	public int getPacketTypeID() {
+		return packetType.getID();
+	}
+	
+	public String getPacketTypeName() {
+		return packetType.getName();
+	}
 
 	public String getOperationName() {
-		return operation.toString();
+		return operation.getName();
 	}
 	
 	public int getOperationID() {
 		return operation.getID();
 	}
 	
+	public void closeScanner() {
+		scanner.close();
+	}
 
 }

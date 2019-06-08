@@ -3,6 +3,7 @@ package utilities.client;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -21,67 +22,78 @@ public class ClientWR extends Client {
 	public ClientWR(RequestPacket requestPacket) {
 
 		this.requestPacket = requestPacket;
+		
+		try {
+			sendReceiveSocket = new DatagramSocket();
+		} catch (SocketException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		serverPort = SERVER_PORT;
 
 		try {
 			file = new FILEUtil(PATH + requestPacket.getFilename());
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			String error = e.getMessage();			
+			checkIOErrors(error);			
 		}
 
 		data = file.getData();
 		transfer();
 	}
-
-	private void transfer() {
-		//sending request...
-		this.requestPacket.setDatagramPacket(serverAddress, serverPort);
-
-		try {
-			sendReceiveSocket.send(requestPacket.getDatagramPacket());
-		} catch (IOException e3) {
-			// TODO Auto-generated catch block
-			e3.printStackTrace();
-		}
-		
-		DatagramPacket dp = new DatagramPacket(new byte[512], 512);
-		
-		try {
-			sendReceiveSocket.receive(dp);
-			serverPort = dp.getPort();
-			serverAddress = dp.getAddress();
 	
-			ACKPacket temp = null;
+	private void transfer() {
+		int tNum = 0;
+		int i = 1;
+		boolean gotACK0 = false;
+
+		// try to get the first ackPakcet....
+		while (!gotACK0) {
+			// sending request...
+			this.requestPacket.setDatagramPacket(serverAddress, serverPort);
+
 			try {
-				temp = new ACKPacket(dp.getData(), dp.getLength());
-			} catch (Exception e) {
-				ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
-				err.setDatagramPacket(serverAddress, serverPort);
-				
-				sendReceiveSocket.send(err.getDatagramPacket());
-				
+				sendReceiveSocket.send(requestPacket.getDatagramPacket());
+			} catch (IOException e3) {
+				// TODO Auto-generated catch block
+				e3.printStackTrace();
+			}
+
+			DatagramPacket dp = new DatagramPacket(new byte[512], 512);
+
+			try {
+				sendReceiveSocket.setSoTimeout(500);
+				sendReceiveSocket.receive(dp);
+
+				serverPort = dp.getPort();
+				originalPort = serverPort; // used to check for ID errors
+				serverAddress = dp.getAddress();
+
+				// if we get a corrupted packet we create an error packet, send it, and
+				// terminate.
+				// if we get an error packet we terminate
+				// else we return the ackPacket
+				ACKPacket temp = checkForCorruptionError(dp, 0);
+				if (VERBOSE)
+					System.out.println("GOT FIRST PACKET (REQUEST)  PACKET#" + temp.getIntBN());
+				gotACK0 = true;
+			} catch (SocketTimeoutException e1) {
+				System.out.println("ACK receive timed-out... retrying");
+				tNum++;
+				if (tNum > 50) {
+					System.out.println("Could not get ACK #0");
+					break;
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
-				System.exit(1);
 			}
-			
-			if(temp.isError()) {
-				System.out.println("Error Code:"+temp.getErrorPacket().getIntBN()+ temp.getErrorPacket().getMsg());
-				System.exit(1);
-			}
-			
-			
-			System.out.println("GOT FIRST PACKET (REQUEST)  PACKET#" + temp.getIntBN());
-		} catch (IOException e3) {
-			// TODO Auto-generated catch block
-			e3.printStackTrace();
+
 		}
-		
-		
 		
 		//writing file...
-		System.out.println("Writing File...");
-		int i = 1;
-		int tNum = 0;
-
+		System.out.println("Writing File...");		
+		tNum = 0;
 		//this loop will first get response from server then if no time out, will send a packet
 		while (i < data.length + 1) {
 
@@ -89,57 +101,90 @@ public class ClientWR extends Client {
 			dataPacket.setDatagramPacket(serverAddress, serverPort);
 			System.out.println("");
 			
+			//send DATA (no need to check for error here)
 			try {
 				sendReceiveSocket.send(dataPacket.getDatagramPacket());
 			} catch (IOException e2) {
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
-			}
-			
+			}			
 			
 			DatagramPacket response = new DatagramPacket(new byte[4], 4);
-
+			
 			try {
 				sendReceiveSocket.setSoTimeout(500);
 				sendReceiveSocket.receive(response); 
 				
-				ACKPacket ackPacket = null;
-				try {
-					ackPacket = new ACKPacket(response.getData(), response.getLength());
-				} catch (Exception e) {
-					ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
-					err.setDatagramPacket(serverAddress, serverPort);
-					
-					sendReceiveSocket.send(err.getDatagramPacket());
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				checkForIDError(response);
+				ACKPacket ackPacket = checkForCorruptionError(response, i);
 				
-				if(ackPacket.isError()) {
-					System.out.println("Error Code:"+ackPacket.getErrorPacket().getIntBN()+ ackPacket.getErrorPacket().getMsg());
-					System.exit(1);
-				}
+				if(VERBOSE) System.out.println("sent DataPacket #" + i + " got ACK #" + ackPacket.getIntBN());
 				
-				System.out.println("got it....");
-				System.out.println(i + " vs " +ackPacket.getIntBN());
-				
-				
-				if (i == ackPacket.getIntBN() ) {
-					i++;
-				}				
+				if (i == ackPacket.getIntBN()) i++;					
 				
 				tNum = 0;
+				
 			} catch (SocketTimeoutException e1) {
 				System.out.println("ACK receive timed-out... retrying");
 				tNum++;
 				if(tNum > 50) {
+					System.out.println("Could not get ACK #" + i);
 					break;
-				}
+			}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		
+		 System.out.println("Finished Writing");
 	}
-
+	
+	//check for error 4
+	//in clients:
+	//this error  occurs when the opCode of the datagramPacket receive does not coincide with the opCode of the expected packet.
+	//this error also occurs when block num is invalid. 
+	private ACKPacket checkForCorruptionError(DatagramPacket dp, int expectedPacket) {
+		ACKPacket temp = null;
+		try {
+			temp = new ACKPacket(dp.getData(), dp.getLength());
+			
+		} catch (Exception e) {
+			ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation");
+			err.setDatagramPacket(serverAddress, serverPort);
+			
+			try {
+				sendReceiveSocket.send(err.getDatagramPacket());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			//e.printStackTrace();
+			endClient("Ending client  Error 4 (Illegal TFTP operation)");
+		}
+		
+		if(temp.isError()) {
+			System.out.println("Error Code:"+ temp.getErrorPacket().getIntBN() + temp.getErrorPacket().getMsg());
+			String msg = (temp.getErrorPacket().getMsg().isEmpty()) ? "" : "(" + temp.getErrorPacket().getMsg() +" )";
+			endClient("Ending client, " +  temp.getErrorPacket().getIntBN() + msg);
+		}
+		
+		//when the block number is out of sequence
+		if(expectedPacket < temp.getIntBN() ) {
+			ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation");
+			err.setDatagramPacket(serverAddress, serverPort);
+			
+			try {
+				sendReceiveSocket.send(err.getDatagramPacket());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			endClient("Ending client  Error 4 (Illegal TFTP operation)");
+		}
+		
+		
+		return temp;
+	}
 }

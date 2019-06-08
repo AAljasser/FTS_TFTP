@@ -2,10 +2,14 @@
 
 package program;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Scanner;
+
 import javax.swing.JOptionPane;
 import utilities.*;
 import utilities.client.*;
@@ -13,27 +17,24 @@ import utilities.packets.*;
 
 public class Client {
 	
-	//protected static final boolean VERBOSE = false;
-	protected static final String PATH = "C:\\Users\\AyeJay\\Desktop\\files\\";
+	protected static final boolean VERBOSE = true;
+	protected static final String PATH = "C:\\Jose\\Java\\files\\";
 	protected static final int MAX_CAPACITY = 512;
+	protected static final int SERVER_PORT = 29;
 
 	protected int serverPort;
+	//used to check for error 5, this is set as soon as the server responds and remains constant
+	protected Integer originalPort;
 	protected InetAddress serverAddress;
 	protected DatagramSocket sendReceiveSocket;
 	
 	private String filename;
 	private String mode;
 	private Request request;
+	private Scanner scanner = new Scanner(System.in);
 
 	// constructor
-	public Client() {
-		try {
-			sendReceiveSocket = new DatagramSocket();
-		} catch (SocketException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		serverPort = 29;
+	public Client() {		
 		try {
 			serverAddress = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -44,8 +45,13 @@ public class Client {
 	}
 
 	public void sendReceive() {
-
-		showInterface();
+		String shutdown = null;
+		
+		do {
+		reset();
+		
+		showInterface();	
+		
 
 		RequestPacket RPacket = new RequestPacket(request, filename, mode);
 
@@ -55,44 +61,125 @@ public class Client {
 			new ClientWR(RPacket);
 		} else
 			System.out.println("Could not contact server");
-
-		sendReceiveSocket.close(); // closes the socket
+	
+		System.out.println("\n");
+		System.out.println("Transfer ended.");
+		System.out.println("\nType 1 to continue with another tranfer, type  0 to end");
+		
+		shutdown = scanner.nextLine();
+		
+		}
+		while(shutdown == null || shutdown.contentEquals("1"));
+		if(shutdown.equals("0")) endClient("Ending client by command");
+		else endClient("Ending client wrong command");
+		
+		System.out.println("");
 	}
 
+	public void reset() {
+		if(sendReceiveSocket != null) sendReceiveSocket.close();
+		request = null;
+		filename = null;
+		mode = null;
+		originalPort = -1;
+		serverPort = SERVER_PORT;
+		try {
+			serverAddress = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 	public Request createRequest(String type) {
-		if(type == null) {
-			endClient();
+		if(type == null || type.isEmpty()) {
+			endClient("Ending client because the type of request was empty");
 		}
 				
 		try {
 			return new Request(type);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			JOptionPane.showMessageDialog(null, "Wrong type of request, try typing 'write' or 'read'", "ERROR",
-					JOptionPane.ERROR_MESSAGE);
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-			System.exit(1);
+			System.out.println("Error, wrong type of request entered by user, client will end now");
+			endClient("ending client because of wrong type of request");
 		}
 		return null;
 	}
 
 	private void showInterface() {
-		// creates a request Object with the type of request entered by the user
-		request = createRequest(JOptionPane.showInputDialog(null, "File transfer operation(Write or Read):", "Client Interface", JOptionPane.DEFAULT_OPTION));
-		// saves the filename that the user enters
-		filename = JOptionPane.showInputDialog(null, "Enter filename: ", "Client Interface", JOptionPane.DEFAULT_OPTION);
-		if(filename == null) endClient();
-		// saves the mode that the user enters.
-		mode = JOptionPane.showInputDialog(null, "Enter mode: ", "Client Interface", JOptionPane.DEFAULT_OPTION).toLowerCase();
-		if(mode == null) endClient();
 		
+		System.out.println("Introduce the type of operation(type 1 for read, type 2 for write");
+		String value = scanner.nextLine();
+		String temp = "";
+		if(value.equals("1")) temp = "read";
+		if(value.equals("2")) temp = "write";
+		
+		request = createRequest(temp);
+		
+		System.out.println("Enter filename (including its extension): ");
+		filename = scanner.nextLine();
+		
+		System.out.println("Enter the mode");
+		mode = scanner.nextLine();		
 	}
 
-	public void endClient() {
-		JOptionPane.showMessageDialog(null, "Error, client will close now", "ERROR",JOptionPane.ERROR_MESSAGE);
+	public void endClient(String msj) {
+		System.out.println(msj);
+		sendReceiveSocket.close();
+		scanner.close();
+		
 		System.exit(1);
+	}
+	
+	//check for error 5
+	//this error only occurs when during the transfer the port IDs are different than the one in the initial connection;
+	public void checkForIDError(DatagramPacket dp) {
+				
+		if(dp.getPort() != originalPort) {
+			System.out.println("Got an unknown tranfer ID  (Error 5)");
+			
+			ErrorPacket error = new ErrorPacket(5, "Unknown transfer ID");
+			error.setDatagramPacket(dp.getAddress(), dp.getPort());
+			
+			try {
+				sendReceiveSocket.send(error.getDatagramPacket());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				System.out.println("Just responded to the Unknown transfer ID with Error Code 5");
+			}
+		}
+	}
+	
+	
+	//Check for IOERRORS (ONLY CATCHES EXCEPTIONS)
+	//ERROR 4 DEALS WITH ACTUAL IO Errors
+	public void checkIOErrors(String error) {		
+		
+		if(error.equals("NotFound")) {
+			System.out.println("File Not Found");
+			endClient("Error 1 (File not found)");
+		}
+		
+		else if(error.equals("WErr")) {
+			System.out.println("Access denied");
+			endClient("Ending client Error 2 (Access denied");
+		}
+		
+		else if(error.equals("SErr")) {
+			System.out.println("Disk is full, cannot save the file");
+			endClient("Ending client Error 3 (Disk is full)");
+			
+		}
+		
+		if(error.equals("OWErr")) {
+			System.out.println("File already exists and cannot overrite");
+			endClient("Ending client Error 6 (File already exists");
+		}
+		else {
+			System.out.print("Something unexpected happended");
+			endClient("Ending client Error 0 (Not defined) " + error);
+		}
+		
 	}
 	/**
 	 * Main method of Client class
