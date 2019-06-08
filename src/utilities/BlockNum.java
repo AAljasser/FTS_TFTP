@@ -18,8 +18,8 @@ public class BlockNum {
 		} else {
 			byteValue = new byte[2];
 			intValue = num;
-			byteValue[1] = (byte) (num >>7);
-			byteValue[0] = (byte) (num & 0b1111111);
+			byteValue[1] = (byte) (num >>> 8);
+			byteValue[0] = (byte) (num & 0xff);
 		}
 	}
 	public BlockNum(byte[] num) {
@@ -27,7 +27,7 @@ public class BlockNum {
 			System.out.println("Array too small...");
 		} else {
 			byteValue = num;
-			intValue = (int)(byteValue[1]<<7)+(int)byteValue[0];
+			intValue = (int)(((byteValue[1] & 0xff) <<8)| (byteValue[0] & 0xff));
 		}
 	}
 	public int getInt() {
@@ -36,5 +36,4 @@ public class BlockNum {
 	public byte[] getByte() {
 		return byteValue;
 	}
-	
 }
