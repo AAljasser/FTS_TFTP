@@ -61,10 +61,11 @@ public class ErrorPacket extends Packet{
 	private String extractMSG(byte[] packet) {
 		String msg = "";
 		
-		byte[] msgArray =  ArrayUtil.subArray(packet, 4, packet.length - 1);
-		
-		for(byte b : msgArray) msg += (char)b;
-		
+		if(packet.length > 4) {
+			byte[] msgArray =  ArrayUtil.subArray(packet, 4, packet.length - 1);
+			
+			for(byte b : msgArray) msg += (char)b;
+		}
 		return msg;
 	}
 

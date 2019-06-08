@@ -23,7 +23,7 @@ public class Packet {
 		
 		if(id[0] == 0 && id[1] == 5) {
 			isError = true;
-			try {
+			try {				
 				errorPacket = new ErrorPacket(array, length);
 			} catch (Exception e) {
 				System.out.println("Error in Class Packet when creating this.errorPacket");

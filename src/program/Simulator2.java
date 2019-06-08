@@ -191,7 +191,7 @@ public class Simulator2 {
 			aux = true;
 			//TODO: DO THIS CHECK ON sendToCLientOnWrite();...
 			//warning : this block should work in theory, we havent tested it
-			if(val == null) return aux;
+			//if(val == null) return aux;
 			
 		}
 	

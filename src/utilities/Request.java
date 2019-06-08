@@ -6,14 +6,14 @@ package utilities;
  */
 public class Request {
 	
-//	public enum Types {WRITE, READ};
 	
 	private String type;
 	private byte[] bytes;
+	private int ID;
 	
 	//Constructor
 	public Request(String type) throws Exception {		
-		if(!type.toUpperCase().equals("READ") && !type.toUpperCase().equals("WRITE")) throw new Exception();
+		if(!type.toUpperCase().equals("READ") && !type.toUpperCase().equals("WRITE")) throw new Exception("WRONG TYPE OF REQUEST");
 		this.type = type.toUpperCase();	
 		setBytesFromType();
 	}
@@ -47,4 +47,5 @@ public class Request {
 	private void setTypeFromBytes() {
 		type = (bytes[1] == 1) ? "READ" : "WRITE";
 	}
+	
 }
