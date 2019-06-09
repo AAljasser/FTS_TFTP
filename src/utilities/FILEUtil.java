@@ -66,7 +66,7 @@ public final class FILEUtil {
 		}  catch (IOException e) {
 			System.out.println("IOException, exiting...");
 			e.printStackTrace();
-			System.exit(1);
+			//System.exit(1);
 		} finally {
 			try {
 				if(fStream != null)
@@ -74,7 +74,7 @@ public final class FILEUtil {
 			} catch (IOException e) {
 				System.out.println("IOException at closing File Stream, Exiting...");
 				e.printStackTrace();
-				System.exit(1);
+				//System.exit(1);
 			}
 		}
 
@@ -101,20 +101,18 @@ public final class FILEUtil {
 		this.loadedFile = new File(dir);
 		
 		
-		if(this.loadedFile.exists() && !OW) {
-			FileException = new IOException("OWErr"); //Can't overwrite due to permission set
-			throw FileException;
-		}
-		
-		if(incData.length*508 > this.loadedFile.getParentFile().getFreeSpace()) {
-			FileException = new IOException("SErr"); //No space Error
-			throw FileException;
-		}
-		
-		if(!this.loadedFile.canWrite() && this.loadedFile.exists()) {
-			FileException = new IOException("WErr"); //Can't write Error
-			throw FileException;
-		}
+		/*
+		 * if(this.loadedFile.exists() && !OW) { FileException = new
+		 * IOException("OWErr"); //Can't overwrite due to permission set throw
+		 * FileException; }
+		 * 
+		 * if(incData.length*508 > this.loadedFile.getParentFile().getFreeSpace()) {
+		 * FileException = new IOException("SErr"); //No space Error throw
+		 * FileException; }
+		 * 
+		 * if(!this.loadedFile.canWrite() && this.loadedFile.exists()) { FileException =
+		 * new IOException("WErr"); //Can't write Error throw FileException; }
+		 */
 
 		
 		
@@ -130,12 +128,12 @@ public final class FILEUtil {
 				sFile.close();	
 			} catch (FileNotFoundException e) {
 				System.out.println("File Not Found, exiting...");
-				e.printStackTrace();
-				System.exit(1);
+				///e.printStackTrace();
+				///System.exit(1);
 			} catch (IOException e) {
 				System.out.println("IOException at sFile write/close, exiting...");
-				e.printStackTrace();
-				System.exit(1);
+				//e.printStackTrace();
+				//System.exit(1);
 			}
 		}
 		
