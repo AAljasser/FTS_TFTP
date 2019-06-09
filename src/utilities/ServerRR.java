@@ -15,6 +15,7 @@ public class ServerRR extends Server {
 	private FILEUtil loadedFile;
 	private DataPacket dPack;
 	private ACKPacket aPack;
+	private boolean err = false;
 
 	public ServerRR(DatagramPacket p) {
 		super(p);
@@ -23,15 +24,33 @@ public class ServerRR extends Server {
 		try {
 			temp = new RequestPacket(p.getData(), p.getLength());
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
+			err.setDatagramPacket(this.cAdd, this.cPort);
+			
+			try {
+				this.socket.send(err.getDatagramPacket());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			System.out.println("Error 4: Packet Opecode Couldn't be recognized");
+			this.err = true;
 		}
+		
+		if(temp.isError()) {
+			System.out.println("Error Code:"+temp.getErrorPacket().getIntBN()+ temp.getErrorPacket().getMsg());
+			this.err = true;
+		}
+		
 		this.fileName = temp.getFilename();
 		this.fileMode = temp.getMode();
 	}
 
 	@Override
 	public void run() {
+		
+		if(this.err) {
+			return;
+		}
 		
 		
 		
@@ -45,7 +64,8 @@ public class ServerRR extends Server {
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-			e.printStackTrace();
+			System.out.println("File Named: "+this.fileName+" Could not be found.");
+			return;
 		}
 		
 		
@@ -60,7 +80,7 @@ public class ServerRR extends Server {
 			dPack.setDatagramPacket(this.cAdd, this.cPort);
 			
 			try {
-				System.out.println("Sending BlockNum: "+bNum);
+				if(this.verbose) System.out.println("Sending DataPacket #"+dPack.getIntBN());
 				this.socket.send(dPack.getDatagramPacket());
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -72,12 +92,17 @@ public class ServerRR extends Server {
 				this.socket.setSoTimeout(500);
 				this.socket.receive(this.packet);
 				try {
+					
 					this.aPack = new ACKPacket(this.packet.getData(),this.packet.getLength());
+					if(this.verbose) System.out.println("Received ACKPacket #"+this.aPack.getIntBN());
 				} catch (Exception e) {
 					ErrorPacket err = new ErrorPacket(4, "Incorrect Ack Packet");
 					err.setDatagramPacket(this.cAdd, this.cPort);
 					
-					e.printStackTrace();
+					this.socket.send(err.getDatagramPacket());
+					
+					System.out.println("Error 4: Packet Received is unrecognizable");
+					return;
 				}
 				
 				if(this.packet.getPort() != this.cPort) {
@@ -86,16 +111,16 @@ public class ServerRR extends Server {
 					
 					this.socket.send(E.getDatagramPacket());
 				}
-				if(this.dPack.isError()) {
+				if(this.aPack.isError()) {
 					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ this.dPack.getErrorPacket().getMsg());
-					System.exit(1);
+					return;
 				}
 				
 				if(bNum == this.aPack.getIntBN()) {
 					bNum++;
 				}
 				
-				if(bNum == temp.length) {
+				if(bNum == temp.length && this.verbose) {
 					System.out.println("LAST PACKET SENT IS #: " + aPack.getIntBN());
 				}
 				tNum = 0;
