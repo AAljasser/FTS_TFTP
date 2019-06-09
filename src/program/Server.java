@@ -13,7 +13,7 @@ import utilities.packets.*;
 public class Server implements Runnable {
 	//Defaults
 	protected static String dir = "C:\\Jose\\Java\\files\\server\\";
-	
+	protected boolean verbose = true;
 	protected DatagramSocket socket;
 	protected DatagramPacket packet;
 	protected InetAddress cAdd = null;

@@ -100,10 +100,7 @@ public class ServerWR extends Server {
 					return;
 				}
 				
-				if(verbose) {
-					System.out.println("Recieved from client Data #"+this.dPack.getIntBN());
-					
-				}
+				
 				
 				
 				if(this.packet.getPort() != this.cPort) {
@@ -121,6 +118,10 @@ public class ServerWR extends Server {
 					return;
 				}
 				
+				if(verbose) {
+					System.out.println("Recieved from client Data #"+this.dPack.getIntBN());
+					
+				}
 				
 				
 				if(bNum+1 == this.dPack.getIntBN()) {
