@@ -42,7 +42,7 @@ public final class FILEUtil {
 		
 		
 		try {fStream = new FileInputStream(this.loadedFile);}
-		catch(FileNotFoundException x) { throw x;}
+		catch(FileNotFoundException x) { throw new FileNotFoundException("NotFound");}
 		
 		
 		try {
