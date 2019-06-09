@@ -84,7 +84,7 @@ public class ClientRR extends Client {
 				
 				tNum = 0;
 			} catch (SocketTimeoutException e1) {
-				System.out.println("DataPacket wait timed-out... retrying");
+				System.out.println("ACKPacket wait timed-out... retrying");
 				tNum++;
 				if(tNum > 50) {
 					break;

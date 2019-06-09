@@ -18,7 +18,7 @@ import utilities.packets.*;
 public class Client {
 	
 	protected static final boolean VERBOSE = true;
-	protected static final String PATH = "D:\\Users\\Abdullrhman Aljasser\\Documents\\GitHub\\FTS_TFTP\\files\\";
+	protected static final String PATH = "C:\\Users\\abdullrhmanaljasser\\Desktop\\FTS_TFTP\\files\\";
 	protected static final int MAX_CAPACITY = 512;
 	protected static final int SERVER_PORT = 29;
 

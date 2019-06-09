@@ -12,8 +12,8 @@ import utilities.packets.*;
 
 public class Server implements Runnable {
 	//Defaults
-	protected static String dir = "D:\\Users\\Abdullrhman Aljasser\\Documents\\GitHub\\FTS_TFTP\\files\\server\\";
-	
+	protected static String dir = "C:\\Users\\abdullrhmanaljasser\\Desktop\\FTS_TFTP\\files\\server\\";
+	protected boolean verbose = true;
 	protected DatagramSocket socket;
 	protected DatagramPacket packet;
 	protected InetAddress cAdd = null;

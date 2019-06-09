@@ -1,10 +1,9 @@
 package utilities.packets;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import utilities.ArrayUtil;
-import utilities.TFTPUtil;
-
 public class Packet {
 	
 	private byte[] packet;
@@ -23,7 +22,7 @@ public class Packet {
 		
 		if(id[0] == 0 && id[1] == 5) {
 			isError = true;
-			try {
+			try {				
 				errorPacket = new ErrorPacket(array, length);
 			} catch (Exception e) {
 				System.out.println("Error in Class Packet when creating this.errorPacket");
@@ -49,12 +48,17 @@ public class Packet {
 	}
 		
 	public void setDatagramPacket(int port) {		
-		this.datagramPacket = TFTPUtil.datagramPacket(packet, port);
+		try {
+			this.datagramPacket =  new DatagramPacket(packet, packet.length, InetAddress.getLocalHost(), port);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
 	public void setDatagramPacket(InetAddress address, int port) {
-		this.datagramPacket = TFTPUtil.datagramPacket(packet, packet.length, address, port);
+		this.datagramPacket = new DatagramPacket(packet, packet.length, address, port);
 		
 	}
 		
