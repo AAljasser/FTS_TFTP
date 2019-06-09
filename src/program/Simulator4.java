@@ -297,6 +297,7 @@ public class Simulator4 {
 	
 	//TODO: should we pass the delay?
 	private void delayPacket(DatagramPacket dp, int id,  int pNumber) {
+		byte[] opCode = Arrays.copyOfRange(dp.getData(), 0, 2);
 		try {
 			Thread.sleep(1500);
 		} catch (InterruptedException e) {
@@ -312,12 +313,14 @@ public class Simulator4 {
 
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp = (isRead) ? "Read" : "Write";
-		System.out.println("Delaying " + temp2 + "Packet#" + pNumber + " on " + temp);
+		System.out.println("Delaying " + temp2 + "Packet#" + pNumber + " on " + temp  + " Packet OPCODE IS :" + opCode[0] + " " + opCode[1]);
+		
 
 		
 	}
 	
 	private void duplicatePacket(DatagramPacket dp, int id, int pNumber) {
+		byte[] opCode = Arrays.copyOfRange(dp.getData(), 0, 2);
 		if(id == 1) {
 			sendPacket(dp, serverSocket, serverAddress, serverPort);
 		}else {
@@ -326,17 +329,18 @@ public class Simulator4 {
 		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp = (isRead) ? "Read" : "Write";
-		System.out.println("Duplicating " + temp2 + "Packet#" + pNumber + " on " + temp);
+		System.out.println("Duplicating " + temp2 + "Packet#" + pNumber + " on " + temp + " Packet OPCODE IS :" + opCode[0] + " " + opCode[1]);
 
 		
 	}
 
 	
 	private void losePacket(DatagramPacket dp, int pNumber) {
+		byte[] opCode = Arrays.copyOfRange(dp.getData(), 0, 2);
 		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp = (isRead) ? "Read" : "Write";
-		System.out.println("Losing " + temp2 + "Packet#" + pNumber + " on " + temp);
+		System.out.println("Losing " + temp2 + "Packet#" + pNumber + " on " + temp + " Packet OPCODE IS :" + opCode[0] + " " + opCode[1]);
 	
 	}
 	
@@ -346,6 +350,7 @@ public class Simulator4 {
 		
 		InetAddress address = (callerID == 1) ? serverAddress : clientAddress;
 		int port = (callerID == 1) ? serverPort : clientPort;
+		byte[] opCode = Arrays.copyOfRange(dp.getData(), 0, 2);
 		
 		DatagramSocket temp = null;
 		try {
@@ -359,9 +364,10 @@ public class Simulator4 {
 		temp.close();
 
 		
+		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp1 = (isRead) ? "Read" : "Write";
-		System.out.println("Generating ERROR 5 " + temp2 + "Packet#" + pNumber + " on " + temp1);
+		System.out.println("Generating ERROR 5 " + temp2 + "Packet#" + pNumber + " on " + temp1 + " Packet OPCODE IS :" + opCode[0] + " " + opCode[1]);
 		
 	}
 	
@@ -369,13 +375,14 @@ public class Simulator4 {
 	//TODO : should we pass the opcode?
 	private void error4OpCode(DatagramPacket dp, int pNumber) {
 		byte[] data = dp.getData();
+		byte[] opCode = Arrays.copyOfRange(dp.getData(), 0, 2);
 		
 		data[0] = 99;
 		data[1] = 99;		
 		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp = (isRead) ? "Read" : "Write";
-		System.out.println("Generating ERROR 4 on OpCode " + temp2 + "Packet#" + pNumber + " on " + temp);
+		System.out.println("Generating ERROR 4 on OpCode " + temp2 + "Packet#" + pNumber + " on " + temp + " Packet OPCODE IS :" + opCode[0] + " " + opCode[1]);
 		
 	
 	}
@@ -384,12 +391,14 @@ public class Simulator4 {
 	//TODO : should we pass the offset?
 	private void error4BlockNumber(DatagramPacket dp, int pNumber) {
 		byte[] data = dp.getData();
+		byte[] opCode = Arrays.copyOfRange(dp.getData(), 0, 2);
 		
 		data[3] = (byte) (data[3] + 3);
 		
+		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp = (isRead) ? "Read" : "Write";
-		System.out.println("Generating ERROR 4 on BlockNumber " + temp2 + "Packet#" + pNumber + " on " + temp);
+		System.out.println("Generating ERROR 4 on BlockNumber " + temp2 + "Packet#" + pNumber + " on " + temp + " Packet OPCODE IS :" + opCode[0] + " " + opCode[1]);
 		
 	
 	}
