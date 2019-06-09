@@ -14,7 +14,7 @@ import utilities.BlockNum;
 import utilities.packets.RequestPacket;
 import utilities.simulator.Parameters;
 
-public class Simulator {
+public class Simulator2 {
 	
 	private static final int MAX_CAPACITY = 512;
 	private static final int SIMULATOR_PORT = 29;
@@ -30,7 +30,7 @@ public class Simulator {
 	private boolean loseDataPacket;
 	private boolean transferEnded;
 	private int blockSent, blockReceived;
-	private int lengthSent;
+	private int lengthSent, lengthReceived;
 	private Scanner scanner = new Scanner(System.in);
 	
 	
@@ -43,7 +43,7 @@ public class Simulator {
 	private Parameters parameters;
 	
 	//constructor
-	public Simulator() {
+	public Simulator2() {
 		//for it5 change the server Address here
 		try {
 			clientAddress = InetAddress.getLocalHost();
@@ -87,6 +87,7 @@ public class Simulator {
 		if(clientSocket != null) clientSocket.close();
 		if(serverSocket != null) serverSocket.close();
 	
+		lengthReceived = 0;
 		lengthSent = 0;
 		serverPort = 69;
 		clientPort = -1;
@@ -122,6 +123,7 @@ public class Simulator {
 		
 		boolean nonStablish= true;
 		boolean temp = false;
+		boolean meesPacket = false;
 		while(!transferEnded) {
 					
 
@@ -154,14 +156,19 @@ public class Simulator {
 	public boolean fromClientToServerData(int i, boolean messPacket, boolean isEnd) {
 		boolean conectionOk = false;
 		
-		if (isWrite || (isRead && !packetFailure)) {
+		if ((isWrite && loseDataPacket) || (isWrite && !loseDataPacket && !packetFailure) ||	
+			(isRead && !loseDataPacket && !packetFailure) ||(isRead && loseDataPacket && !packetFailure) 
+			
+			) {
 			packetFailure = false;
 
 			BlockNum pNumber = null;
 			int operationID = parameters.getOperationID();		
 			int callerID = 1;
 
+			System.out.println("Waiting for client to acknole agai");
 			receivePacket(clientSocket);
+			System.out.println("got fro client");
 			// request type and block num = 0
 			if (i == 0) {
 				try {
@@ -206,7 +213,10 @@ public class Simulator {
 	//losing ackpackets on write
 	public void fromServerToClientData(int i, boolean messPacket,  boolean isEnd) {
 	
-		if (isRead || (isWrite && !packetFailure)) {
+		if ((isRead && loseDataPacket&& !transferEnded) || (isRead && !loseDataPacket) ||
+			(isWrite && !loseDataPacket && !transferEnded) || (isWrite && loseDataPacket && !packetFailure) 	
+			
+			) {
 
 			packetFailure = false;
 			int operationID = parameters.getOperationID();
@@ -214,7 +224,9 @@ public class Simulator {
 
 			BlockNum pNumber = null;
 			// Step 3 :
+			System.out.println("Waiting for server to give me data again");
 			receivePacket(serverSocket);
+			System.out.println("got data");
 			// change the port to the one that is attending our request;
 			if (i == 0)
 				serverPort = receivePacket.getPort();
@@ -395,7 +407,7 @@ public class Simulator {
 	}
 	
 	public static void main(String args[]) {
-		Simulator simulator = new Simulator();
+		Simulator2 simulator = new Simulator2();
 		
 		simulator.listen();
 	}

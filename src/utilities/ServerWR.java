@@ -19,11 +19,10 @@ public class ServerWR extends Server {
 	private FILEUtil loadedFile;
 	private DataPacket dPack;
 	private ACKPacket aPack;
-	private boolean err = false;
-	
 
 	public ServerWR(DatagramPacket p) {
 		super(p);
+		// TODO Auto-generated constructor stub
 		RequestPacket temp = null;
 		try {
 			temp = new RequestPacket(p.getData(), p.getLength());
@@ -34,15 +33,16 @@ public class ServerWR extends Server {
 			try {
 				this.socket.send(err.getDatagramPacket());
 			} catch (IOException e1) {
+				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			System.out.println("Error 4: Packet Opecode Couldn't be recognized");
-			this.err = true;
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		if(temp.isError()) {
-			System.out.println("Error Code: "+temp.getErrorPacket().getIntBN()+ temp.getErrorPacket().getMsg());
-			this.err = true;
+			System.out.println("Error Code:"+temp.getErrorPacket().getIntBN()+ temp.getErrorPacket().getMsg());
+			System.exit(1);
 		}
 		
 		this.fileName = temp.getFilename();
@@ -56,22 +56,15 @@ public class ServerWR extends Server {
 		int bNum = 0;
 		int run = 0;
 		int tNum = 0;
-
-		if(this.err) {
-			run = -1;
-		}
 		
 		
 		while (run == 0) {
 			this.aPack = new ACKPacket(bNum);
 			this.aPack.setDatagramPacket(this.cAdd, this.cPort);
 			
-			if(verbose) {
-				System.out.println("Sending to client ACK #"+bNum);
-			}
-			
 			try {
 				this.socket.send(this.aPack.getDatagramPacket());
+				System.out.println("sending block#" + aPack.getIntBN());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -80,9 +73,6 @@ public class ServerWR extends Server {
 			try {
 				this.socket.setSoTimeout(500);
 				this.socket.receive(this.packet);
-				
-				
-				
 				try {
 					this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
 				} catch (Exception e1) {
@@ -96,32 +86,33 @@ public class ServerWR extends Server {
 						ex.printStackTrace();
 					}
 					// TODO Auto-generated catch block
-					System.out.println("Error 4: Packet Received is unrecognizable");
-					return;
+					e1.printStackTrace();
 				}
 				
-				if(verbose) {
-					System.out.println("Recieved from client Data #"+this.dPack.getIntBN());
-					
-				}
-				
-				
-				if(this.packet.getPort() != this.cPort) {
+				if(this.aPack.getDatagramPacket().getPort() != this.cPort) {
 					ErrorPacket E = new ErrorPacket(5, "Unknown transfer ID");
-					System.out.println("Unknown transfer ID");
 					E.setDatagramPacket(this.aPack.getDatagramPacket().getAddress(), this.aPack.getDatagramPacket().getPort());
 					
 					this.socket.send(E.getDatagramPacket());
 				}
 				
-				
-				
 				if(this.dPack.isError()) {
 					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ this.dPack.getErrorPacket().getMsg());
-					return;
+					System.exit(1);
 				}
 				
-				
+				/*if(this.dPack.getDatagramPacket().getPort() != this.cPort) {
+					ErrorPacket err = new ErrorPacket(5, "Incorrect TID");
+					err.setDatagramPacket(this.cAdd, this.cPort);
+					
+					try {
+						this.socket.send(err.getDatagramPacket());
+					} catch (IOException ex) {
+						// TODO Auto-generated catch block
+						ex.printStackTrace();
+					}
+					break;
+				}*/
 				
 				if(bNum+1 == this.dPack.getIntBN()) {
 					temp[bNum] = this.dPack.getData();
@@ -134,7 +125,7 @@ public class ServerWR extends Server {
 						
 						try {
 							this.socket.send(this.aPack.getDatagramPacket());
-							if(this.verbose) System.out.println("LAST PACKET SENT IS #: " + aPack.getIntBN());
+							System.out.println("LAST PACKET SENT IS #: " + aPack.getIntBN());
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -142,7 +133,7 @@ public class ServerWR extends Server {
 				}
 				tNum=0;
 			} catch (SocketTimeoutException e1) {
-				if(this.verbose) System.out.println("ACK wait timed-out... retrying");
+				System.out.println("ACK wait timed-out... retrying");
 				tNum++;
 				if(tNum > 50) {
 					break;
@@ -160,3 +151,4 @@ public class ServerWR extends Server {
 	}
 
 }
+
