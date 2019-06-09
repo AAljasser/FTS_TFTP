@@ -1,4 +1,4 @@
-//SIMULATOR V2.0
+
 
 package program;
 
