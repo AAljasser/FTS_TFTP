@@ -78,7 +78,7 @@ public class ClientWR extends Client {
 					System.out.println("GOT FIRST PACKET (REQUEST)  PACKET#" + temp.getIntBN());
 				gotACK0 = true;
 			} catch (SocketTimeoutException e1) {
-				System.out.println("ACK receive timed-out... retrying");
+				System.out.println("DataPacket receive timed-out... retrying");
 				tNum++;
 				if (tNum > 50) {
 					System.out.println("Could not get ACK #0");
