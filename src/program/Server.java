@@ -12,7 +12,11 @@ import utilities.packets.*;
 
 public class Server implements Runnable {
 	//Defaults
+<<<<<<< HEAD
 	protected static String dir = "C:\\Jose\\Java\\files\\server\\";
+=======
+	protected static String dir = "D:\\Users\\Abdullrhman Aljasser\\Documents\\GitHub\\FTS_TFTP\\files\\server\\";
+>>>>>>> master
 	
 	protected DatagramSocket socket;
 	protected DatagramPacket packet;

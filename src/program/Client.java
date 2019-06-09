@@ -18,7 +18,11 @@ import utilities.packets.*;
 public class Client {
 	
 	protected static final boolean VERBOSE = true;
+<<<<<<< HEAD
 	protected static final String PATH = "C:\\Jose\\Java\\files\\";
+=======
+	protected static final String PATH = "D:\\Users\\Abdullrhman Aljasser\\Documents\\GitHub\\FTS_TFTP\\files\\";
+>>>>>>> master
 	protected static final int MAX_CAPACITY = 512;
 	protected static final int SERVER_PORT = 29;
 
