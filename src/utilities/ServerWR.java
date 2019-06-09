@@ -51,7 +51,7 @@ public class ServerWR extends Server {
 
 	@Override
 	public void run() {
-		byte[][] temp = new byte[1024][];
+		byte[][] temp = new byte[65535][];
 		byte[] rData = new byte[512];
 		int bNum = 0;
 		int run = 0;
@@ -64,6 +64,7 @@ public class ServerWR extends Server {
 			
 			try {
 				this.socket.send(this.aPack.getDatagramPacket());
+				System.out.println("sending block#" + aPack.getIntBN());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -75,7 +76,7 @@ public class ServerWR extends Server {
 				try {
 					this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
 				} catch (Exception e1) {
-					ErrorPacket err = new ErrorPacket(4, "Incorrect Packet");
+					ErrorPacket err = new ErrorPacket(4, "Incorrect Data Packet");
 					err.setDatagramPacket(this.cAdd, this.cPort);
 					
 					try {
@@ -86,6 +87,13 @@ public class ServerWR extends Server {
 					}
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
+				}
+				
+				if(this.aPack.getDatagramPacket().getPort() != this.cPort) {
+					ErrorPacket E = new ErrorPacket(5, "Unknown transfer ID");
+					E.setDatagramPacket(this.aPack.getDatagramPacket().getAddress(), this.aPack.getDatagramPacket().getPort());
+					
+					this.socket.send(E.getDatagramPacket());
 				}
 				
 				if(this.dPack.isError()) {
@@ -109,7 +117,7 @@ public class ServerWR extends Server {
 				if(bNum+1 == this.dPack.getIntBN()) {
 					temp[bNum] = this.dPack.getData();
 					bNum++;
-					System.out.println(this.packet.getLength());
+					
 					if(this.packet.getLength()<512) {
 						run = -1;
 						this.aPack = new ACKPacket(bNum);
@@ -117,6 +125,7 @@ public class ServerWR extends Server {
 						
 						try {
 							this.socket.send(this.aPack.getDatagramPacket());
+							System.out.println("LAST PACKET SENT IS #: " + aPack.getIntBN());
 						} catch (IOException e) {
 							e.printStackTrace();
 						}

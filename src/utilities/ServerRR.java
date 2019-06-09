@@ -38,7 +38,7 @@ public class ServerRR extends Server {
 		try {
 			this.loadedFile = new FILEUtil(dir+this.fileName);
 		} catch (FileNotFoundException e) {
-			ErrorPacket E = new ErrorPacket(404, "File could not be found!");
+			ErrorPacket E = new ErrorPacket(1, "File not found!");
 			E.setDatagramPacket(this.cAdd, this.cPort);
 			try {
 				this.socket.send(E.getDatagramPacket());
@@ -74,12 +74,29 @@ public class ServerRR extends Server {
 				try {
 					this.aPack = new ACKPacket(this.packet.getData(),this.packet.getLength());
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
+					ErrorPacket err = new ErrorPacket(4, "Incorrect Ack Packet");
+					err.setDatagramPacket(this.cAdd, this.cPort);
+					
 					e.printStackTrace();
+				}
+				
+				if(this.aPack.getDatagramPacket().getPort() != this.cPort) {
+					ErrorPacket E = new ErrorPacket(5, "Unknown transfer ID");
+					E.setDatagramPacket(this.aPack.getDatagramPacket().getAddress(), this.aPack.getDatagramPacket().getPort());
+					
+					this.socket.send(E.getDatagramPacket());
+				}
+				if(this.dPack.isError()) {
+					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ this.dPack.getErrorPacket().getMsg());
+					System.exit(1);
 				}
 				
 				if(bNum == this.aPack.getIntBN()) {
 					bNum++;
+				}
+				
+				if(bNum == temp.length) {
+					System.out.println("LAST PACKET SENT IS #: " + aPack.getIntBN());
 				}
 				tNum = 0;
 			} catch (SocketTimeoutException e1) {
