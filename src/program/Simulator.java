@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 import utilities.BlockNum;
+import utilities.packets.ErrorPacket;
 import utilities.packets.RequestPacket;
 import utilities.simulator.Parameters;
 
@@ -32,7 +33,7 @@ public class Simulator {
 	private int blockSent, blockReceived;
 	private int lengthSent;
 	private Scanner scanner = new Scanner(System.in);
-	
+	private boolean endByError;
 	
 	private InetAddress clientAddress, serverAddress;
 	
@@ -87,6 +88,7 @@ public class Simulator {
 		if(clientSocket != null) clientSocket.close();
 		if(serverSocket != null) serverSocket.close();
 	
+		endByError = false;
 		lengthSent = 0;
 		serverPort = 69;
 		clientPort = -1;
@@ -122,7 +124,7 @@ public class Simulator {
 		
 		boolean nonStablish= true;
 		boolean temp = false;
-		while(!transferEnded) {
+		while(!transferEnded || endByError) {
 					
 
 			//first parameter is used to identify if we are sending the request
@@ -251,8 +253,8 @@ public class Simulator {
 		if(operationID == 1) delayPacket(dp, callerID, packetNumber);
 		else if (operationID == 2) duplicatePacket(dp, callerID, packetNumber);
 		else if (operationID == 3) losePacket(dp, packetNumber);
-		else if (operationID == 4) error4OpCode(dp, packetNumber);
-		else if (operationID == 5) error4BlockNumber(dp, packetNumber);
+		else if (operationID == 4) error4OpCode(dp, packetNumber, callerID);
+		else if (operationID == 5) error4BlockNumber(dp, packetNumber, callerID);
 		else if (operationID == 6) error5(dp, packetNumber, callerID);
 		
 		packetFailure = true;
@@ -344,8 +346,7 @@ public class Simulator {
 	//TODO : should we pass the new port?
 	private void error5(DatagramPacket dp, int pNumber, int callerID) {
 		
-		InetAddress address = (callerID == 1) ? serverAddress : clientAddress;
-		int port = (callerID == 1) ? serverPort : clientPort;
+		
 		
 		DatagramSocket temp = null;
 		try {
@@ -354,44 +355,111 @@ public class Simulator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		sendPacket(dp, temp, address, port);
-		receivePacket(temp);
+		
+		if(callerID == 1) {
+			sendPacket(dp, temp, serverAddress, serverPort);
+			
+			receivePacket(temp);
+			
+			sendPacket(dp, serverSocket, serverAddress, serverPort);
+			
+			
+		}else {
+			sendPacket(dp, temp, clientAddress, clientPort);	
+			
+			receivePacket(temp);
+			
+			sendPacket(dp, clientSocket, clientAddress, clientPort);
+						
+		}
 		temp.close();
-
+				
 		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp1 = (isRead) ? "Read" : "Write";
 		System.out.println("Generating ERROR 5 " + temp2 + "Packet#" + pNumber + " on " + temp1);
 		
+		ErrorPacket errorPacket = new ErrorPacket(receivePacket.getData(), receivePacket.getLength());
+		
+		System.out.println("GOT ERROR PACKET with the following code:" + errorPacket.getIntBN() +  " and msg: " + errorPacket.getMsg());
+		System.out.println("");
 	}
 	
 	
 	//TODO : should we pass the opcode?
-	private void error4OpCode(DatagramPacket dp, int pNumber) {
+	private void error4OpCode(DatagramPacket dp, int pNumber, int callerID) {
 		byte[] data = dp.getData();
-		
+			
 		data[0] = 99;
 		data[1] = 99;		
+		
+		DatagramPacket tempData = new DatagramPacket(data, dp.getLength(), dp.getAddress(), dp.getPort());
+		
+		
 		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp = (isRead) ? "Read" : "Write";
 		System.out.println("Generating ERROR 4 on OpCode " + temp2 + "Packet#" + pNumber + " on " + temp);
 		
-	
+		if(callerID == 1) {
+			sendPacket(tempData, serverSocket, serverAddress, serverPort);
+			
+			receivePacket(serverSocket);
+			
+			sendPacket(receivePacket, clientSocket, clientAddress, clientPort);
+			
+		}else {
+			sendPacket(tempData, clientSocket, clientAddress, clientPort);	
+			
+			receivePacket(clientSocket);
+			
+			sendPacket(receivePacket, serverSocket, serverAddress, serverPort);
+			
+		}
+		
+		byte[] opCode = Arrays.copyOfRange(receivePacket.getData(), 0, 2);
+		byte[] errorCode = Arrays.copyOfRange(receivePacket.getData(), 2, 4);
+		System.out.println("Get error " + errorCode[0] +" " + errorCode[1] + " opCode" + opCode[0] + " "+ opCode[1]  );
+		System.out.println("END BY ERROR 4");
+		endByError = true;
 	}
 
 	
 	//TODO : should we pass the offset?
-	private void error4BlockNumber(DatagramPacket dp, int pNumber) {
+	private void error4BlockNumber(DatagramPacket dp, int pNumber, int callerID) {
 		byte[] data = dp.getData();
 		
 		data[3] = (byte) (data[3] + 3);
+		
+		
+		DatagramPacket tempData = new DatagramPacket(data, dp.getLength(), dp.getAddress(), dp.getPort());
+		
 		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp = (isRead) ? "Read" : "Write";
 		System.out.println("Generating ERROR 4 on BlockNumber " + temp2 + "Packet#" + pNumber + " on " + temp);
 		
-	
+		if(callerID == 1) {
+			sendPacket(tempData, serverSocket, serverAddress, serverPort);
+			
+			receivePacket(serverSocket);
+			
+			sendPacket(receivePacket, clientSocket, clientAddress, clientPort);
+			
+		}else {
+			sendPacket(tempData, clientSocket, clientAddress, clientPort);	
+			
+			receivePacket(clientSocket);
+			
+			sendPacket(receivePacket, serverSocket, serverAddress, serverPort);
+			
+		}
+		
+		byte[] opCode = Arrays.copyOfRange(receivePacket.getData(), 0, 2);
+		byte[] errorCode = Arrays.copyOfRange(receivePacket.getData(), 2, 4);
+		System.out.println("Get error " + errorCode[0] +" " + errorCode[1] + " opCode" + opCode[0] + " "+ opCode[1]  );
+		System.out.println("END BY ERROR 4");
+		endByError = true;
 	}
 	
 	public static void main(String args[]) {

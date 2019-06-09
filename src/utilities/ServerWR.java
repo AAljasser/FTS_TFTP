@@ -89,9 +89,9 @@ public class ServerWR extends Server {
 					e1.printStackTrace();
 				}
 				
-				if(this.aPack.getDatagramPacket().getPort() != this.cPort) {
+				if(this.packet.getPort() != this.cPort) {
 					ErrorPacket E = new ErrorPacket(5, "Unknown transfer ID");
-					E.setDatagramPacket(this.aPack.getDatagramPacket().getAddress(), this.aPack.getDatagramPacket().getPort());
+					E.setDatagramPacket(this.packet.getAddress(), this.packet.getPort());
 					
 					this.socket.send(E.getDatagramPacket());
 				}
