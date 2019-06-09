@@ -43,7 +43,7 @@ public class Simulator2 {
 	private Parameters parameters;
 	
 	//constructor
-	public Simulator4() {
+	public Simulator2() {
 		//for it5 change the server Address here
 		try {
 			clientAddress = InetAddress.getLocalHost();
@@ -407,7 +407,7 @@ public class Simulator2 {
 	}
 	
 	public static void main(String args[]) {
-		Simulator2 simulator = new Simulator4();
+		Simulator2 simulator = new Simulator2();
 		
 		simulator.listen();
 	}
