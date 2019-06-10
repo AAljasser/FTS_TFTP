@@ -1,4 +1,6 @@
 package utilities.packets;
+import java.util.Arrays;
+
 import utilities.ArrayUtil;
 import utilities.BlockNum;
 
@@ -34,11 +36,11 @@ public class DataPacket extends Packet{
 				this.setID(extractID(packet));
 			}
 			
-			else throw new Exception("Invalid DataPacket format");
+			else  throw new Exception("OPCODE");
 		}
 	}
 	
-	private boolean validatePacket(byte[] packet)  {
+	private boolean validatePacket(byte[] packet) throws Exception  {
 		
 		//data packets min length is 4 bytes(id = 2 bytes, blockNum = 2 bytes, data = 0 bytes), max length is 512 bytes
 		//packet.length must be in the range 4 to 512
@@ -47,11 +49,9 @@ public class DataPacket extends Packet{
 		//check for the ID, the first two bytes must be 0 and 3
 		else if(packet[0] != 0 || packet[1] != 3) return false;
 		
-		//we decide not to check for block numbers, remove comments to check for them;
-		//else if(packet[2] / 128 >= 1 || packet[2] / 128 <= -1) return false;
-		//else if(packet[3] / 128 >= 1 || packet[3] / 128 <= -1) return false;
+		byte[] bnum = Arrays.copyOfRange(packet,2,4);
 		
-		//there's no way to check for data correctness, we can only look at the length of the array (must be >= 4 and <=512)
+		if(bnum[0] == -1 || bnum[1] == -1) throw new Exception("BNUMBER");
 		
 		return true;
 	}

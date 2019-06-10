@@ -105,18 +105,18 @@ public class ServerRR extends Server {
 					return;
 				}
 				
-				if(this.packet.getPort() != this.cPort) {
-					ErrorPacket E = new ErrorPacket(5, "Unknown transfer ID");
-					E.setDatagramPacket(this.packet.getAddress(), this.packet.getPort());
-					
-					this.socket.send(E.getDatagramPacket());
-				}
 				if(this.aPack.isError()) {
 					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ this.dPack.getErrorPacket().getMsg());
 					return;
 				}
 				
-				if(bNum == this.aPack.getIntBN()) {
+				if(this.packet.getPort() != this.cPort) {
+					ErrorPacket E = new ErrorPacket(5, "Error 5: Unknown transfer ID");
+					System.out.println("Error 5: Unknown Source!");
+					E.setDatagramPacket(this.packet.getAddress(), this.packet.getPort());
+					
+					this.socket.send(E.getDatagramPacket());
+				} else if(bNum == this.aPack.getIntBN()) {
 					bNum++;
 				}
 				

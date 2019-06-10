@@ -45,7 +45,7 @@ public class ClientRR extends Client {
 		int tNum = 0;
 		
 		System.out.println("Start Reading...");
-		while (is512) {
+		while (is512 && !transmissionEnd) {
 
 			DatagramPacket dgp = new DatagramPacket(new byte[MAX_CAPACITY], MAX_CAPACITY);
 
@@ -61,7 +61,7 @@ public class ClientRR extends Client {
 					checkForIDError(dgp);			
 				}
 				DataPacket response = checkForCorruptionError(dgp, blockNumber);
-								
+				if(transmissionEnd) break;				
 				
 				ACKPacket ack = new ACKPacket(response.getIntBN());
 				ack.setDatagramPacket(serverAddress, serverPort); 				 
@@ -119,38 +119,43 @@ public class ClientRR extends Client {
 			temp = new DataPacket(dp.getData(), dp.getLength());			
 			
 		} catch (Exception e) {
-			ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation");
-			err.setDatagramPacket(serverAddress, serverPort);
-			
-			try {
-				sendReceiveSocket.send(err.getDatagramPacket());
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			if(e.getMessage().equals("OPCODE")) {
+				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation");
+				err.setDatagramPacket(serverAddress, serverPort);
+				
+				try {
+					sendReceiveSocket.send(err.getDatagramPacket());
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				//e.printStackTrace();
+				endClientTransfer("Ending client  Error 4 on OPCODE (Illegal TFTP operation)");
+				return null;
 			}
-			endClient("Ending client  Error 4 (Illegal TFTP operation)");
+			else if(e.getMessage().equals("BNUMBER")) {
+				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation");
+				err.setDatagramPacket(serverAddress, serverPort);
+				
+				try {
+					sendReceiveSocket.send(err.getDatagramPacket());
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				endClientTransfer("Ending client  Error 4 on BLOCK NUMBER (Illegal TFTP operation)");
+				return null;
+			}
 		}
-		
+			
 		if(temp.isError()) {
 			System.out.println("Error Code:"+ temp.getErrorPacket().getIntBN()+ temp.getErrorPacket().getMsg());
 			String msg = (temp.getErrorPacket().getMsg().isEmpty()) ? "" : "(" + temp.getErrorPacket().getMsg() +" )";
-			endClient("Ending client, " +  temp.getErrorPacket().getIntBN() + msg);
+			endClientTransfer("Ending client, " +  temp.getErrorPacket().getIntBN() + msg );
+			return null;
 		}
 		
-		
-		//when the block number is out of sequence
-		if(expectedPacket < temp.getIntBN() ) {
-			ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation");
-			err.setDatagramPacket(serverAddress, serverPort);
-			
-			try {
-				sendReceiveSocket.send(err.getDatagramPacket());
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			endClient("Ending client  Error 4 (Illegal TFTP operation)");
-		}
 		
 		return temp;
 	}

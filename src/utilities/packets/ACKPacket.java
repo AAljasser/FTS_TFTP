@@ -1,4 +1,6 @@
 package utilities.packets;
+import java.util.Arrays;
+
 import utilities.ArrayUtil;
 import utilities.BlockNum;
 
@@ -32,11 +34,11 @@ public class ACKPacket extends Packet{
 				this.setID(extractID(packet));
 			}
 			
-			else  throw new Exception("Invalid ACKPacket format");
+			else  throw new Exception("OPCODE");
 		}
 	}
 	
-	private boolean validatePacket(byte[] packet)  {
+	private boolean validatePacket(byte[] packet) throws Exception  {
 		
 		//length of ACK PACKETS must be 4 (id = 2 bytes , block number = 2 bytes)
 		//packet.length must be in the range 4 to 512
@@ -45,9 +47,9 @@ public class ACKPacket extends Packet{
 		//ID bytes must be 0 and 4
 		else if(packet[0] != 0 || packet[1] != 4) return false;
 		
-		//we decide not to check for block numbers, remove comments to check for them;
-		//else if(packet[2] / 128 >= 1 || packet[2] / 128 <= -1) return false;
-		//else if(packet[3] / 128 >= 1 || packet[3] / 128 <= -1) return false;
+		byte[] bnum = Arrays.copyOfRange(packet,2,4);
+		
+		if(bnum[0] == -1 || bnum[1] == -1) throw new Exception("BNUMBER");
 		
 		return true;
 	}

@@ -101,30 +101,23 @@ public class ServerWR extends Server {
 				}
 				
 				
-				
-				
-				if(this.packet.getPort() != this.cPort) {
-					ErrorPacket E = new ErrorPacket(5, "Unknown transfer ID");
-					System.out.println("Unknown transfer ID");
-					E.setDatagramPacket(this.aPack.getDatagramPacket().getAddress(), this.aPack.getDatagramPacket().getPort());
-					
-					this.socket.send(E.getDatagramPacket());
-				}
-				
-				
-				
 				if(this.dPack.isError()) {
-					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ this.dPack.getErrorPacket().getMsg());
+					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ " " + this.dPack.getErrorPacket().getMsg());
 					return;
 				}
 				
-				if(verbose) {
-					System.out.println("Recieved from client Data #"+this.dPack.getIntBN());
+				if(this.packet.getPort() != this.cPort) {
+					ErrorPacket E = new ErrorPacket(5, "Error 5: Unknown transfer ID");
+					System.out.println("Error 5: Unknown transfer ID");
+					E.setDatagramPacket(this.packet.getAddress(), this.packet.getPort());
 					
-				}
-				
-				
-				if(bNum+1 == this.dPack.getIntBN()) {
+					this.socket.send(E.getDatagramPacket());
+
+				} else if(bNum+1 == this.dPack.getIntBN()) {
+					if(verbose) {
+						System.out.println("Recieved from client Data #"+this.dPack.getIntBN());
+						
+					}
 					temp[bNum] = this.dPack.getData();
 					bNum++;
 					
