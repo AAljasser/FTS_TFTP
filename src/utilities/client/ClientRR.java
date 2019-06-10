@@ -150,9 +150,10 @@ public class ClientRR extends Client {
 		}
 			
 		if(temp.isError()) {
-			System.out.println("Error Code:"+ temp.getErrorPacket().getIntBN()+ temp.getErrorPacket().getMsg());
+			System.out.println("Error Code:"+ temp.getErrorPacket().getIntBN()+ " " +  temp.getErrorPacket().getMsg());
+			
 			String msg = (temp.getErrorPacket().getMsg().isEmpty()) ? "" : "(" + temp.getErrorPacket().getMsg() +" )";
-			endClientTransfer("Ending client, " +  temp.getErrorPacket().getIntBN() + msg );
+			endClientTransfer("Ending client ERROR 4 " +" " + msg );
 			return null;
 		}
 		

@@ -80,9 +80,7 @@ public class ServerWR extends Server {
 			try {
 				this.socket.setSoTimeout(500);
 				this.socket.receive(this.packet);
-				
-				
-				
+												
 				try {
 					this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
 				} catch (Exception e1) {
