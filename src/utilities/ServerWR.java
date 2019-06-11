@@ -1,10 +1,17 @@
 package utilities;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 
 import program.Server;
@@ -14,9 +21,11 @@ import utilities.packets.ErrorPacket;
 import utilities.packets.RequestPacket;
 
 public class ServerWR extends Server {
+	private FileChannel loadedChannel;
+	private File loadedFile;
 	private String fileName;
 	private String fileMode;
-	private FILEUtil loadedFile;
+	//private FILEUtil loadedFile;
 	private DataPacket dPack;
 	private ACKPacket aPack;
 	private boolean err = false;
@@ -47,9 +56,160 @@ public class ServerWR extends Server {
 		
 		this.fileName = temp.getFilename();
 		this.fileMode = temp.getMode();
+		
+		this.loadedFile = new File(dir+this.fileName);
+		
+		if(this.loadedFile.exists()) {
+			//TODO File Exists ERROR
+			ErrorPacket err = new ErrorPacket(6, "File Already Exists");
+			err.setDatagramPacket(this.cAdd, this.cPort);
+			
+			try {
+				this.socket.send(err.getDatagramPacket());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			System.out.println("Error 6: File Already Exists");
+			this.err = true;
+		}
+		
+		try {
+			this.loadedChannel = FileChannel.open(this.loadedFile.toPath(),StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			try {
+				this.loadedChannel.tryLock();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (OverlappingFileLockException e) {
+			System.out.println("Error 2: Access violation");
+			//TODO Create Error Packet
+		}
+	}
+	
+	@Override
+	public void run() {
+		byte[] rData = new byte[512];
+		
+		int bNum = 0;
+		int run = 0;
+		int tNum = 0;
+		
+		if(this.err) {
+			run = -1;
+		}
+		
+		while (run ==0) {
+			this.aPack = new ACKPacket(bNum);
+			this.aPack.setDatagramPacket(this.cAdd,this.cPort);
+			
+			if(verbose) {
+				System.out.println("Sending to client ACK #"+bNum);
+			}
+			
+			try {
+				this.socket.send(this.aPack.getDatagramPacket());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			this.packet = new DatagramPacket(rData,rData.length);
+			try {
+				this.socket.setSoTimeout(500);
+				this.socket.receive(this.packet);
+				
+				try {
+					this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
+				} catch (Exception e) {
+					ErrorPacket err = new ErrorPacket(4, e.getMessage());
+					err.setDatagramPacket(this.cAdd, this.cPort);
+					
+					try {
+						this.socket.send(err.getDatagramPacket());
+					} catch (IOException ex) {
+						// TODO Auto-generated catch block
+						ex.printStackTrace();
+					}
+					// TODO Auto-generated catch block
+					System.out.println("Error 4: "+e.getMessage());
+					return;
+				}
+				
+				if(verbose) {
+					System.out.println("Recieved from client Data #"+this.dPack.getIntBN());
+					
+				}
+				
+				if(this.packet.getPort() != this.cPort) {
+					ErrorPacket E = new ErrorPacket(5, "Unknown transfer ID");
+					System.out.println("Unknown transfer ID");
+					E.setDatagramPacket(this.aPack.getDatagramPacket().getAddress(), this.aPack.getDatagramPacket().getPort());
+					
+					this.socket.send(E.getDatagramPacket());
+				}
+				
+				if(this.dPack.isError()) {
+					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ this.dPack.getErrorPacket().getMsg());
+					return;
+				}
+				
+				if(bNum+1 == this.dPack.getIntBN()) {
+					ByteBuffer saving = ByteBuffer.wrap(this.dPack.getData());
+					
+					
+					if(this.loadedFile.getParentFile().getFreeSpace() < this.dPack.getData().length) {
+						ErrorPacket err = new ErrorPacket(3, "Disk Full");
+						err.setDatagramPacket(this.cAdd, this.cPort);
+						this.socket.send(err.getDatagramPacket());
+						this.loadedChannel.close();
+						this.loadedFile.delete();
+						return;
+					}
+					
+					this.loadedChannel.write(saving);
+					bNum++;
+					
+					if(this.packet.getLength()<512) {
+						run = -1;
+						this.aPack = new ACKPacket(bNum);
+						this.aPack.setDatagramPacket(this.cAdd, this.cPort);
+						
+						try {
+							this.socket.send(this.aPack.getDatagramPacket());
+							if(this.verbose) System.out.println("LAST PACKET SENT IS #: " + aPack.getIntBN());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				tNum=0;
+				
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		try {
+			this.loadedChannel.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-	@Override
+	/*@Override
 	public void run() {
 		byte[][] temp = new byte[65535][];
 		byte[] rData = new byte[512];
@@ -157,6 +317,6 @@ public class ServerWR extends Server {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+	}*/
 
 }
