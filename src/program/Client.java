@@ -26,7 +26,8 @@ public class Client {
 	//used to check for error 5, this is set as soon as the server responds and remains constant
 	protected Integer originalPort;
 	protected InetAddress serverAddress;
-	protected DatagramSocket sendReceiveSocket;
+	protected DatagramSocket sendReceiveSocket;	
+	protected boolean transmissionEnd;
 	
 	private String filename;
 	private String mode;
@@ -70,14 +71,17 @@ public class Client {
 		
 		}
 		while(shutdown == null || shutdown.contentEquals("1"));
-		if(shutdown.equals("0")) endClient("Ending client by command");
-		else endClient("Ending client wrong command");
-		
-		System.out.println("");
+		if(shutdown.equals("0")) {
+			System.out.println("Ending client by command");
+		}
+		else System.out.println("Ending client wrong command");
+		System.exit(1);
+		scanner.close();
 	}
 
 	public void reset() {
 		if(sendReceiveSocket != null) sendReceiveSocket.close();
+		transmissionEnd = false;
 		request = null;
 		filename = null;
 		mode = null;
@@ -93,7 +97,7 @@ public class Client {
 	
 	public Request createRequest(String type) {
 		if(type == null || type.isEmpty()) {
-			endClient("Ending client because the type of request was empty");
+			endClientTransfer("Ending client because the type of request was empty");
 		}
 				
 		try {
@@ -101,7 +105,7 @@ public class Client {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			System.out.println("Error, wrong type of request entered by user, client will end now");
-			endClient("ending client because of wrong type of request");
+			endClientTransfer("ending client because of wrong type of request");
 		}
 		return null;
 	}
@@ -123,12 +127,10 @@ public class Client {
 		mode = scanner.nextLine();		
 	}
 
-	public void endClient(String msj) {
+	public void endClientTransfer(String msj) {
 		System.out.println(msj);
 		sendReceiveSocket.close();
-		scanner.close();
-		
-		System.exit(1);
+		transmissionEnd = true;
 	}
 	
 	//check for error 5
@@ -157,27 +159,27 @@ public class Client {
 		
 		if(error.equals("NotFound")) {
 			System.out.println("File Not Found");
-			endClient("Error 1 (File not found)");
+			endClientTransfer("Error 1 (File not found)");
 		}
 		
 		else if(error.equals("WErr")) {
 			System.out.println("Access denied");
-			endClient("Ending client Error 2 (Access denied");
+			endClientTransfer("Ending client Error 2 (Access denied");
 		}
 		
 		else if(error.equals("SErr")) {
 			System.out.println("Disk is full, cannot save the file");
-			endClient("Ending client Error 3 (Disk is full)");
+			endClientTransfer("Ending client Error 3 (Disk is full)");
 			
 		}
 		
 		if(error.equals("OWErr")) {
 			System.out.println("File already exists and cannot overrite");
-			endClient("Ending client Error 6 (File already exists");
+			endClientTransfer("Ending client Error 6 (File already exists");
 		}
 		else {
 			System.out.print("Something unexpected happended");
-			endClient("Ending client Error 0 (Not defined) " + error);
+			endClientTransfer("Ending client Error 0 (Not defined) " + error);
 		}
 		
 	}

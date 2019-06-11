@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 import utilities.BlockNum;
+import utilities.packets.ErrorPacket;
 import utilities.packets.RequestPacket;
 import utilities.simulator.Parameters;
 
@@ -18,6 +19,8 @@ public class Simulator {
 	
 	private static final int MAX_CAPACITY = 512;
 	private static final int SIMULATOR_PORT = 29;
+	private  InetAddress SERVER_ADDRESS =null;
+	private   int SERVER_PORT = 69;
 	
 	private int serverPort;;
 	private int clientPort;
@@ -32,7 +35,7 @@ public class Simulator {
 	private int blockSent, blockReceived;
 	private int lengthSent;
 	private Scanner scanner = new Scanner(System.in);
-	
+	private boolean endByError;
 	
 	private InetAddress clientAddress, serverAddress;
 	
@@ -45,6 +48,15 @@ public class Simulator {
 	//constructor
 	public Simulator() {
 		//for it5 change the server Address here
+		serverPort = SERVER_PORT;
+		try {
+			SERVER_ADDRESS = InetAddress.getLocalHost();
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		serverAddress= SERVER_ADDRESS;
+		
 		try {
 			clientAddress = InetAddress.getLocalHost();
 			serverAddress = InetAddress.getLocalHost();
@@ -87,6 +99,9 @@ public class Simulator {
 		if(clientSocket != null) clientSocket.close();
 		if(serverSocket != null) serverSocket.close();
 	
+		endByError = false;
+		serverAddress = SERVER_ADDRESS;
+		serverPort = SERVER_PORT;		
 		lengthSent = 0;
 		serverPort = 69;
 		clientPort = -1;
@@ -129,10 +144,13 @@ public class Simulator {
 			//second parameter is used to identify if we want to lose a dataPacket on write
 			temp = fromClientToServerData(i, (isWrite && loseDataPacket) || (isRead && !loseDataPacket),  lengthSent < MAX_CAPACITY);
 		
-		
+			if(endByError) break;
+			if(transferEnded) break;
 			//first parameter is used to identify if we are responding to a request
 			//second parameter is used to identify if we want to lose a dataPacket on read
 			fromServerToClientData(i, (isRead && loseDataPacket) || (isWrite && !loseDataPacket),  lengthSent < MAX_CAPACITY); 
+			
+			if(endByError) break;
 			
 			i++;
 			
@@ -161,6 +179,7 @@ public class Simulator {
 			int operationID = parameters.getOperationID();		
 			int callerID = 1;
 
+		
 			receivePacket(clientSocket);
 			// request type and block num = 0
 			if (i == 0) {
@@ -185,6 +204,7 @@ public class Simulator {
 
 			// Step 2: send to server (if i == 0 send to port 69 otherwise send to the
 			// attending port)
+			if(endByError) return false;
 			if (!packetFailure) {
 				sendPacket(receivePacket, serverSocket, serverAddress, serverPort);
 				if(isWrite) lengthSent = receivePacket.getLength();
@@ -192,9 +212,11 @@ public class Simulator {
 				conectionOk = true;
 
 				// how to end of transmission?
-				if (isRead && i != 0 && isEnd && blockSent == blockReceived) {
+				boolean temp =   blockSent == blockReceived;
+				if (isRead && i != 0 && isEnd && temp) {					
 					transferEnded = true;
 				}
+				
 				
 			}
 		}
@@ -226,6 +248,7 @@ public class Simulator {
 				doFailure(receivePacket, pNumber.getInt(), operationID, callerID);
 
 			// step 4;
+			if(endByError) return;
 			if (!packetFailure) {
 				sendPacket(receivePacket, clientSocket, clientAddress, clientPort);
 				if(isRead) lengthSent = receivePacket.getLength();
@@ -251,8 +274,8 @@ public class Simulator {
 		if(operationID == 1) delayPacket(dp, callerID, packetNumber);
 		else if (operationID == 2) duplicatePacket(dp, callerID, packetNumber);
 		else if (operationID == 3) losePacket(dp, packetNumber);
-		else if (operationID == 4) error4OpCode(dp, packetNumber);
-		else if (operationID == 5) error4BlockNumber(dp, packetNumber);
+		else if (operationID == 4) error4OpCode(dp, packetNumber, callerID);
+		else if (operationID == 5) error4BlockNumber(dp, packetNumber, callerID);
 		else if (operationID == 6) error5(dp, packetNumber, callerID);
 		
 		packetFailure = true;
@@ -321,7 +344,7 @@ public class Simulator {
 		if(id == 1) {
 			sendPacket(dp, serverSocket, serverAddress, serverPort);
 		}else {
-			sendPacket(dp, clientSocket, clientAddress, clientPort);	
+			sendPacket(dp, clientSocket, clientAddress, clientPort);			
 		}
 		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
@@ -344,8 +367,7 @@ public class Simulator {
 	//TODO : should we pass the new port?
 	private void error5(DatagramPacket dp, int pNumber, int callerID) {
 		
-		InetAddress address = (callerID == 1) ? serverAddress : clientAddress;
-		int port = (callerID == 1) ? serverPort : clientPort;
+		
 		
 		DatagramSocket temp = null;
 		try {
@@ -354,44 +376,114 @@ public class Simulator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		sendPacket(dp, temp, address, port);
-		receivePacket(temp);
+		
+		if(callerID == 1) {
+						
+			sendPacket(dp, temp, serverAddress, serverPort);
+			
+			receivePacket(temp);
+						
+			sendPacket(dp, serverSocket, serverAddress, serverPort);
+			
+			
+		}else {
+			sendPacket(dp, temp, clientAddress, clientPort);	
+			
+			receivePacket(temp);
+			
+			sendPacket(dp, clientSocket, clientAddress, clientPort);
+						
+		}
 		temp.close();
-
+				
 		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp1 = (isRead) ? "Read" : "Write";
 		System.out.println("Generating ERROR 5 " + temp2 + "Packet#" + pNumber + " on " + temp1);
 		
+		ErrorPacket errorPacket = new ErrorPacket(receivePacket.getData(), receivePacket.getLength());
+		
+		System.out.println("GOT ERROR PACKET with the following code:" + errorPacket.getIntBN() +  " and msg: " + errorPacket.getMsg());
+		System.out.println("");
 	}
 	
 	
 	//TODO : should we pass the opcode?
-	private void error4OpCode(DatagramPacket dp, int pNumber) {
+	private void error4OpCode(DatagramPacket dp, int pNumber, int callerID) {
 		byte[] data = dp.getData();
-		
+			
 		data[0] = 99;
 		data[1] = 99;		
+		
+		DatagramPacket tempData = new DatagramPacket(data, dp.getLength(), dp.getAddress(), dp.getPort());
+		
+		
 		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp = (isRead) ? "Read" : "Write";
 		System.out.println("Generating ERROR 4 on OpCode " + temp2 + "Packet#" + pNumber + " on " + temp);
 		
-	
+		if(callerID == 1) {
+			sendPacket(tempData, serverSocket, serverAddress, serverPort);
+			
+			receivePacket(serverSocket);
+			
+			sendPacket(receivePacket, clientSocket, clientAddress, clientPort);
+			
+			endByError = true;
+			
+		}else {
+			sendPacket(tempData, clientSocket, clientAddress, clientPort);	
+			
+			receivePacket(clientSocket);
+			
+			sendPacket(receivePacket, serverSocket, serverAddress, serverPort);
+			
+			endByError = true;
+		}
+				
+		System.out.println("END BY ERROR 4 ON OPCODE");
+		
 	}
 
 	
 	//TODO : should we pass the offset?
-	private void error4BlockNumber(DatagramPacket dp, int pNumber) {
+	private void error4BlockNumber(DatagramPacket dp, int pNumber, int callerID) {
 		byte[] data = dp.getData();
 		
-		data[3] = (byte) (data[3] + 3);
+		//TODO CHANGE THIS TO  NEGATIVE VALUES
+		data[2] = (byte) 0b11111111;
+		data[3] = (byte)  0b11111111;
+		
+		DatagramPacket tempData = new DatagramPacket(data, dp.getLength(), dp.getAddress(), dp.getPort());
+		
 		
 		String temp2 = (parameters.getPacketTypeID() == 1) ? "Data" : "ACK";
 		String temp = (isRead) ? "Read" : "Write";
 		System.out.println("Generating ERROR 4 on BlockNumber " + temp2 + "Packet#" + pNumber + " on " + temp);
 		
-	
+		if(callerID == 1) {
+			sendPacket(tempData, serverSocket, serverAddress, serverPort);
+			
+			receivePacket(serverSocket);
+			
+			sendPacket(receivePacket, clientSocket, clientAddress, clientPort);
+			
+			endByError = true;
+			
+		}else {
+			sendPacket(tempData, clientSocket, clientAddress, clientPort);	
+			
+			receivePacket(clientSocket);
+			
+			sendPacket(receivePacket, serverSocket, serverAddress, serverPort);
+			
+			endByError = true;
+		}
+		
+		
+		System.out.println("END BY ERROR 4 ON BLOCK NUMBER");
+		
 	}
 	
 	public static void main(String args[]) {
