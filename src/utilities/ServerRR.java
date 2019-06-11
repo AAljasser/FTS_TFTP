@@ -1,10 +1,14 @@
 package utilities;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.StandardOpenOption;
 
 import program.Server;
 import utilities.packets.*;
@@ -52,6 +56,38 @@ public class ServerRR extends Server {
 			return;
 		}
 		
+		FileChannel check = null;
+		File s = new File(dir+this.fileName);
+		System.out.println(dir+this.fileName);
+		
+		try {
+			check= FileChannel.open(s.toPath(),StandardOpenOption.WRITE,StandardOpenOption.READ);
+		} catch (IOException e3) {
+			// TODO Auto-generated catch block
+			e3.printStackTrace();
+		}
+		
+		try {
+			check.tryLock();
+			check.close();
+		} catch (OverlappingFileLockException e) {
+			ErrorPacket err = new ErrorPacket(2, "Access violation");
+			err.setDatagramPacket(this.cAdd, this.cPort);
+			
+			System.out.println("Error 2: Access violation");
+			try {
+				this.socket.send(err.getDatagramPacket());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			return;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		
 		
 		try {
@@ -67,7 +103,6 @@ public class ServerRR extends Server {
 			System.out.println("File Named: "+this.fileName+" Could not be found.");
 			return;
 		}
-		
 		
 		
 		byte[][] temp = this.loadedFile.getData();
