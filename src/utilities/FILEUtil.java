@@ -104,8 +104,8 @@ public final class FILEUtil {
 		if(this.loadedFile.exists() && !OW) {
 			FileException = new IOException("OWErr"); //Can't overwrite due to permission set
 			throw FileException;
-		}
-		
+		} 
+		//System.out.println(this.loadedFile.getParentFile().getFreeSpace());
 		if(incData.length*508 > this.loadedFile.getParentFile().getFreeSpace()) {
 			FileException = new IOException("SErr"); //No space Error
 			throw FileException;
