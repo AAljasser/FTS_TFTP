@@ -49,7 +49,7 @@ public class ACKPacket extends Packet{
 		
 		byte[] bnum = Arrays.copyOfRange(packet,2,4);
 		
-		if(bnum[0] == -1 || bnum[1] == -1) throw new Exception("BNUMBER");
+		if(/*bnum[0] == -1 ||*/ bnum[1] == -1) throw new Exception("BNUMBER");
 		
 		return true;
 	}

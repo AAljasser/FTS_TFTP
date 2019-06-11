@@ -60,6 +60,54 @@ public class ServerWR extends Server {
 		this.loadedFile = new File(dir+this.fileName);
 		
 		if(this.loadedFile.exists()) {
+			
+			try {
+				this.loadedChannel = FileChannel.open(this.loadedFile.toPath(), StandardOpenOption.WRITE);
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			try {
+				try {
+					this.loadedChannel.tryLock();
+					ErrorPacket err = new ErrorPacket(6, "File Already Exists");
+					err.setDatagramPacket(this.cAdd, this.cPort);
+					
+					try {
+						this.socket.send(err.getDatagramPacket());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					System.out.println("Error 6: File Already Exists");
+					this.err = true;
+					this.loadedChannel.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} catch (OverlappingFileLockException e) {
+				ErrorPacket err = new ErrorPacket(2, "Access violation");
+				err.setDatagramPacket(this.cAdd, this.cPort);
+				
+				System.out.println("Error 2: Access violation");
+				try {
+					this.socket.send(err.getDatagramPacket());
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				
+				
+				//TODO Create Error Packet
+			}
+			
+			
+			
 			//TODO File Exists ERROR
 			ErrorPacket err = new ErrorPacket(6, "File Already Exists");
 			err.setDatagramPacket(this.cAdd, this.cPort);
@@ -209,7 +257,13 @@ public class ServerWR extends Server {
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				tNum++;
+				if(tNum > 50) {
+					System.out.println("Closing Connetion, Timeout limit excceded...");
+					break;
+				}
+				System.out.println("Client ACK respond timedout...");
+				//e.printStackTrace();
 			}
 			
 		}

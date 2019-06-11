@@ -36,4 +36,18 @@ public class BlockNum {
 	public byte[] getByte() {
 		return byteValue;
 	}
+	
+	public static void main(String args[]) {
+		BlockNum x = null;
+		BlockNum y = null;
+		
+		for(int i =0; i<65000;i++) {
+			x = new BlockNum(i);
+			y = new BlockNum(x.getByte());
+			if(x.getInt() != y.getInt()) {
+				System.out.println("Error at: "+ i);
+			}
+		}
+		
+	}
 }
