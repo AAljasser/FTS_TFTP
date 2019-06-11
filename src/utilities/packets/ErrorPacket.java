@@ -22,7 +22,8 @@ public class ErrorPacket extends Packet{
 	public ErrorPacket(byte[] array, int length) {
 		byte[] packet = ArrayUtil.subArray(array, 0, length);
 		this.setPacket(packet);
-		errorCode = new BlockNum(this.extractErrorCode(packet));
+		//errorCode = new BlockNum(this.extractErrorCode(packet));
+		errorCode = new BlockNum(ArrayUtil.subArray(packet, 2, 4));
 		msg = this.extractMSG(packet);
 	}
 	
