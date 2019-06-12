@@ -182,6 +182,8 @@ public class Client {
 			endClientTransfer("Ending client Error 0 (Not defined) " + error);
 		}
 		
+		transmissionEnd = true;
+		
 	}
 	/**
 	 * Main method of Client class
