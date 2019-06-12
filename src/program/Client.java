@@ -17,9 +17,9 @@ import utilities.packets.*;
 public class Client {
 	
 	protected static final boolean VERBOSE = true;
-	protected static final String PATH = "C:\\Jose\\Java\\files\\";
+	protected static final String PATH = "C:\\Users\\josefrancojimenez\\Desktop\\files\\";
 	protected static final int MAX_CAPACITY = 512;
-	protected static final int SERVER_PORT = 29;
+	protected static final int SERVER_PORT = 69;
 	
 	private ParametersClient parameters;
 	private boolean testMode = false;
@@ -39,7 +39,7 @@ public class Client {
 	// constructor
 	public Client() {		
 		try {
-			serverAddress = InetAddress.getLocalHost();
+			serverAddress = InetAddress.getByName("134.117.59.152");
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			System.exit(1);

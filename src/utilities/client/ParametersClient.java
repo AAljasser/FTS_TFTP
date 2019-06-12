@@ -46,7 +46,8 @@ public class ParametersClient {
 	
 		System.out.println("Type of Request?");
 		System.out.println("type: \n1 for read\n2 for write");
-		request = RequestParameter.values()[scanner.nextInt() - 1].name();
+		int temp = scanner.nextInt();
+		request = RequestParameter.values()[temp - 1].name();
 		
 		System.out.println("Enter filename (including its extension): ");
 		filename = scanner.nextLine();

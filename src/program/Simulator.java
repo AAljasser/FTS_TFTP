@@ -56,7 +56,7 @@ public class Simulator {
 		//for it5 change the server Address here
 		serverPort = SERVER_PORT;
 		try {
-			SERVER_ADDRESS = InetAddress.getLocalHost();
+			SERVER_ADDRESS = InetAddress.getByName("134.117.59.152");
 		} catch (UnknownHostException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -159,7 +159,7 @@ public class Simulator {
 			//first parameter is used to identify if we are sending the request
 			//second parameter is used to identify if we want to lose a dataPacket on write
 			temp = fromClientToServerData(i, (isWrite && loseDataPacket) || (isRead && !loseDataPacket),  lengthSent < MAX_CAPACITY);
-			System.out.println("got packet from client - send packet to server");
+			//System.out.println("got packet from client - send packet to server");
 			
 			
 			if(endByError || transferEnded) {
@@ -169,7 +169,7 @@ public class Simulator {
 			//first parameter is used to identify if we are responding to a request
 			//second parameter is used to identify if we want to lose a dataPacket on read
 			fromServerToClientData(i, (isRead && loseDataPacket) || (isWrite && !loseDataPacket),  lengthSent < MAX_CAPACITY); 
-			System.out.println("got packet from server - send packet to client");
+			//System.out.println("got packet from server - send packet to client");
 			
 			//if(VERBOSE) System.out.println("");
 			if(endByError) break;
@@ -414,13 +414,13 @@ public class Simulator {
 		
 		if(callerID == 1) {
 					
-			//System.out.println("Send to server through a bad device...");
+			System.out.println("Send to server through a bad device...");
 			sendPacket(dp, temp, serverAddress, serverPort);
 			
-			//System.out.println("waiting for response on bad device...");
+			System.out.println("waiting for response on bad device...");
 			receivePacket(temp);
 					
-			//System.out.println("sending to server on original socket... ");
+			System.out.println("sending to server on original socket... ");
 			sendPacket(dp, serverSocket, serverAddress, serverPort);
 			
 			
@@ -545,9 +545,9 @@ public class Simulator {
 
 		for (int r = 2; r <= requesType.length; r++) {
 
-			for (int p = 2; p <=packets.length; p++) {
+			for (int p = 1; p <=packets.length; p++) {
 				
-				for (int op = 6; op < operations.length; op++) {
+				for (int op = 0; op < operations.length; op++) {
 
 					reset();
 					parameters.setOperation(op);
