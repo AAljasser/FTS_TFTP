@@ -36,6 +36,7 @@ public class Simulator {
 	private int lengthSent;
 	private Scanner scanner = new Scanner(System.in);
 	private boolean endByError;
+	private boolean isError;
 	
 	private InetAddress clientAddress, serverAddress;
 	
@@ -99,6 +100,7 @@ public class Simulator {
 		if(clientSocket != null) clientSocket.close();
 		if(serverSocket != null) serverSocket.close();
 	
+		isError = false;
 		endByError = false;
 		serverAddress = SERVER_ADDRESS;
 		serverPort = SERVER_PORT;		
@@ -205,8 +207,14 @@ public class Simulator {
 			// Step 2: send to server (if i == 0 send to port 69 otherwise send to the
 			// attending port)
 			if(endByError) return false;
+			
 			if (!packetFailure) {
 				sendPacket(receivePacket, serverSocket, serverAddress, serverPort);
+				checkForErrorPacket();
+				if(isError) {
+					endByError = true;
+					return false;
+				}
 				if(isWrite) lengthSent = receivePacket.getLength();
 				blockSent = pNumber.getInt();
 				conectionOk = true;
@@ -251,6 +259,11 @@ public class Simulator {
 			if(endByError) return;
 			if (!packetFailure) {
 				sendPacket(receivePacket, clientSocket, clientAddress, clientPort);
+				checkForErrorPacket();
+				if(isError) {
+					endByError = true;
+					return;
+				}
 				if(isRead) lengthSent = receivePacket.getLength();
 				blockReceived = pNumber.getInt();
 				// how to end transmission?
@@ -443,6 +456,15 @@ public class Simulator {
 		}
 				
 		System.out.println("END BY ERROR 4 ON OPCODE");
+		
+	}
+	
+	public void checkForErrorPacket() {
+		byte[] temp = Arrays.copyOfRange(receivePacket.getData(), 0, 2);
+		
+		if(temp[0] == 0 && temp[1] == 5) {
+			isError = true;
+		}
 		
 	}
 
