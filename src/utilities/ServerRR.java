@@ -8,6 +8,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
 
 import program.Server;
@@ -62,6 +63,17 @@ public class ServerRR extends Server {
 		
 		try {
 			check= FileChannel.open(s.toPath(),StandardOpenOption.WRITE,StandardOpenOption.READ);
+		} catch (NoSuchFileException ex){ 
+			ErrorPacket E = new ErrorPacket(1, "File not found!");
+			E.setDatagramPacket(this.cAdd, this.cPort);
+			try {
+				this.socket.send(E.getDatagramPacket());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			System.out.println("File Named: "+this.fileName+" Could not be found.");
+			return;
+			
 		} catch (IOException e3) {
 			// TODO Auto-generated catch block
 			e3.printStackTrace();
