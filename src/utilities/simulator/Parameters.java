@@ -5,7 +5,7 @@ import java.util.Scanner;
 import javax.swing.JOptionPane;
 
 public class Parameters {
-	public enum Operation{DELAY(1, "delay"), DUPLICATE(2, "duplicate"),  LOST(3, "lost"),
+	public enum Operation{NOTHING(0, "nothing"), DELAY(1, "delay"), DUPLICATE(2, "duplicate"),  LOST(3, "lost"),
 		OPCODEERROR(4, "op code error"), BLOCKNUM(5, "block num error"), IDERROR(6, "id error");
 		
 						private int id;
@@ -56,7 +56,7 @@ public class Parameters {
 	public void getInfo() {
 	
 		System.out.println("Which operation you want to perfom?");
-		System.out.println("type:\n1 for delay\n2 for duplicate\n3 for lose\n4 for op code error\n5 for blockNum error\n6 for id error");
+		System.out.println("type: \0 for no operation \n1 for delay\n2 for duplicate\n3 for lose\n4 for op code error\n5 for blockNum error\n6 for id error");
 		operation = Operation.values()[scanner.nextInt() - 1];
 		
 		System.out.println("What type of packets you want to affect?");

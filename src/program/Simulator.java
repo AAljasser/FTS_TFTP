@@ -283,8 +283,9 @@ public class Simulator {
 	}
 	//returns true if packet was 
 	private void doFailure(DatagramPacket dp, int packetNumber, int operationID, int callerID) {
-		//System.out.println("Losing on "+ callerID +" side...");				
-		if(operationID == 1) delayPacket(dp, callerID, packetNumber);
+		//System.out.println("Losing on "+ callerID +" side...");	
+	
+	    if(operationID == 1) delayPacket(dp, callerID, packetNumber);
 		else if (operationID == 2) duplicatePacket(dp, callerID, packetNumber);
 		else if (operationID == 3) losePacket(dp, packetNumber);
 		else if (operationID == 4) error4OpCode(dp, packetNumber, callerID);
@@ -329,6 +330,8 @@ public class Simulator {
 			packetsToBeFailure.add(i);
 		}
 	}
+	
+	
 	
 	
 	//TODO: should we pass the delay?
