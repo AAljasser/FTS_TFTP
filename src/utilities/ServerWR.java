@@ -90,6 +90,12 @@ public class ServerWR extends Server {
 					e.printStackTrace();
 				}
 			} catch (OverlappingFileLockException e) {
+				try {
+					this.loadedChannel.close();
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
 				ErrorPacket err = new ErrorPacket(2, "Access violation");
 				err.setDatagramPacket(this.cAdd, this.cPort);
 				
@@ -139,6 +145,12 @@ public class ServerWR extends Server {
 				e.printStackTrace();
 			}
 		} catch (OverlappingFileLockException e) {
+			try {
+				this.loadedChannel.close();
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
 			ErrorPacket err = new ErrorPacket(2, "Access violation");
 			err.setDatagramPacket(this.cAdd, this.cPort);
 			
@@ -188,9 +200,13 @@ public class ServerWR extends Server {
 				this.socket.setSoTimeout(500);
 				this.socket.receive(this.packet);
 				
+				
+				
 				try {
 					this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
 				} catch (Exception e) {
+					this.loadedChannel.close();
+					this.loadedFile.delete();
 					ErrorPacket err = new ErrorPacket(4, e.getMessage());
 					err.setDatagramPacket(this.cAdd, this.cPort);
 					
@@ -205,6 +221,11 @@ public class ServerWR extends Server {
 					return;
 				}
 				
+				if(this.dPack.isError()) {
+					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ this.dPack.getErrorPacket().getMsg());
+					return;
+				}
+				
 				if(verbose) {
 					System.out.println("Recieved from client Data #"+this.dPack.getIntBN());
 					
@@ -213,21 +234,19 @@ public class ServerWR extends Server {
 				if(this.packet.getPort() != this.cPort) {
 					ErrorPacket E = new ErrorPacket(5, "Unknown transfer ID");
 					System.out.println("Unknown transfer ID");
-					E.setDatagramPacket(this.aPack.getDatagramPacket().getAddress(), this.aPack.getDatagramPacket().getPort());
+					E.setDatagramPacket(this.packet.getAddress(), this.packet.getPort());
 					
 					this.socket.send(E.getDatagramPacket());
 				}
 				
-				if(this.dPack.isError()) {
-					System.out.println("Error Code:"+this.dPack.getErrorPacket().getIntBN()+ this.dPack.getErrorPacket().getMsg());
-					return;
-				}
+				
 				
 				if(bNum+1 == this.dPack.getIntBN()) {
 					ByteBuffer saving = ByteBuffer.wrap(this.dPack.getData());
 					
 					
 					if(this.loadedFile.getParentFile().getFreeSpace() < this.dPack.getData().length) {
+						
 						ErrorPacket err = new ErrorPacket(3, "Disk Full");
 						err.setDatagramPacket(this.cAdd, this.cPort);
 						this.socket.send(err.getDatagramPacket());
@@ -260,6 +279,13 @@ public class ServerWR extends Server {
 				tNum++;
 				if(tNum > 50) {
 					System.out.println("Closing Connetion, Timeout limit excceded...");
+					try {
+						this.loadedChannel.close();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					this.loadedFile.delete();
 					break;
 				}
 				System.out.println("Client ACK respond timedout...");
