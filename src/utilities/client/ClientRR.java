@@ -120,7 +120,7 @@ public class ClientRR extends Client {
 			
 		} catch (Exception e) {
 			if(e.getMessage().equals("OPCODE")) {
-				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation on OPCODE");
+				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation");
 				err.setDatagramPacket(serverAddress, serverPort);
 				
 				try {
@@ -135,7 +135,7 @@ public class ClientRR extends Client {
 				return null;
 			}
 			else if(e.getMessage().equals("BNUMBER")) {
-				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation on Block Number");
+				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation");
 				err.setDatagramPacket(serverAddress, serverPort);
 				
 				try {
