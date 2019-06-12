@@ -85,7 +85,12 @@ public class ServerRR extends Server {
 		} catch (OverlappingFileLockException e) {
 			ErrorPacket err = new ErrorPacket(2, "Access violation");
 			err.setDatagramPacket(this.cAdd, this.cPort);
-			
+			try {
+				check.close();
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
 			System.out.println("Error 2: Access violation");
 			try {
 				this.socket.send(err.getDatagramPacket());
