@@ -188,22 +188,9 @@ public class ServerWR extends Server {
 				this.socket.setSoTimeout(500);
 				this.socket.receive(this.packet);
 				
-				try {
+				//try {
 					this.dPack = new DataPacket(this.packet.getData(),this.packet.getLength());
-				} catch (Exception e) {
-					ErrorPacket err = new ErrorPacket(4, e.getMessage());
-					err.setDatagramPacket(this.cAdd, this.cPort);
-					
-					try {
-						this.socket.send(err.getDatagramPacket());
-					} catch (IOException ex) {
-						// TODO Auto-generated catch block
-						ex.printStackTrace();
-					}
-					// TODO Auto-generated catch block
-					System.out.println("Error 4: "+e.getMessage());
-					return;
-				}
+				//} 
 				
 				if(verbose) {
 					System.out.println("Recieved from client Data #"+this.dPack.getIntBN());
@@ -213,7 +200,7 @@ public class ServerWR extends Server {
 				if(this.packet.getPort() != this.cPort) {
 					ErrorPacket E = new ErrorPacket(5, "Unknown transfer ID");
 					System.out.println("Unknown transfer ID");
-					E.setDatagramPacket(this.aPack.getDatagramPacket().getAddress(), this.aPack.getDatagramPacket().getPort());
+					E.setDatagramPacket(this.packet.getAddress(), this.packet.getPort());
 					
 					this.socket.send(E.getDatagramPacket());
 				}
@@ -264,6 +251,19 @@ public class ServerWR extends Server {
 				}
 				System.out.println("Client ACK respond timedout...");
 				//e.printStackTrace();
+			}catch (Exception exe) {
+				ErrorPacket err = new ErrorPacket(4, exe.getMessage());
+				err.setDatagramPacket(this.cAdd, this.cPort);
+				
+				try {
+					this.socket.send(err.getDatagramPacket());
+				} catch (IOException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+				// TODO Auto-generated catch block
+				System.out.println("Error 4: "+exe.getMessage());
+				return;
 			}
 			
 		}

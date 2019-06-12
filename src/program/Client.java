@@ -188,7 +188,7 @@ public class Client {
 		
 		for(int f = 	0; f < files.length; f++) {
 			
-			for(int i = 0; i < 28; i++) {		//28 non I/O possibles cases
+			for(int i = 14; i < 28; i++) {		//28 non I/O possibles cases
 				reset();
 				if(i < 14) { //14 are on read / 14 are on write
 					parameters.setRequestType(1); //readRequest			

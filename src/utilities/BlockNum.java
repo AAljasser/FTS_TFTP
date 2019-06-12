@@ -12,7 +12,7 @@ public class BlockNum {
 	static byte[] byteValue;
 	static int intValue = -1;
 	public BlockNum(int num) {
-		if(num >= 65535 || num < 0) {
+		if(num >= 65535) {
 			System.out.println("Out of range, 0 <= num <= 65535...");
 
 		} else {

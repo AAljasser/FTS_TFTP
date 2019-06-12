@@ -543,11 +543,11 @@ public class Simulator {
 		int[] operations = { 0, 1, 2, 3, 4, 5, 6 };
 		
 
-		for (int r = 1; r <= requesType.length; r++) {
+		for (int r = 2; r <= requesType.length; r++) {
 
-			for (int p = 1; p <=packets.length; p++) {
+			for (int p = 2; p <=packets.length; p++) {
 				
-				for (int op = 0; op < operations.length; op++) {
+				for (int op = 6; op < operations.length; op++) {
 
 					reset();
 					parameters.setOperation(op);
