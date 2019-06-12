@@ -33,13 +33,14 @@ public class ClientWR extends Client {
 
 		try {
 			file = new FILEUtil(PATH + requestPacket.getFilename());
+			data = file.getData();
 		} catch (FileNotFoundException e) {
 			String error = e.getMessage();			
 			checkIOErrors(error);			
 		}
 
-		data = file.getData();
-		transfer();
+	
+		if(!transmissionEnd) transfer();
 	}
 	
 	private void transfer() {

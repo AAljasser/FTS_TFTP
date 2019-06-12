@@ -170,7 +170,7 @@ public class Client {
 			
 		}
 		
-		if(error.equals("OWErr")) {
+		else if(error.equals("OWErr")) {
 			System.out.println("File already exists and cannot overrite");
 			endClientTransfer("Ending client Error 6 (File already exists");
 		}
@@ -178,6 +178,8 @@ public class Client {
 			System.out.print("Something unexpected happended");
 			endClientTransfer("Ending client Error 0 (Not defined) " + error);
 		}
+		
+		transmissionEnd = true;
 		
 	}
 	
