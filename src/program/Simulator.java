@@ -414,13 +414,13 @@ public class Simulator {
 		
 		if(callerID == 1) {
 					
-			System.out.println("Send to server through a bad device...");
+			//System.out.println("Send to server through a bad device...");
 			sendPacket(dp, temp, serverAddress, serverPort);
 			
-			System.out.println("waiting for response on bad device...");
+			//System.out.println("waiting for response on bad device...");
 			receivePacket(temp);
 					
-			System.out.println("sending to server on original socket... ");
+			//System.out.println("sending to server on original socket... ");
 			sendPacket(dp, serverSocket, serverAddress, serverPort);
 			
 			
