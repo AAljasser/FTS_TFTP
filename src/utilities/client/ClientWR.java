@@ -153,7 +153,7 @@ public class ClientWR extends Client {
 		} catch (Exception e) {
 			
 			if(e.getMessage().equals("OPCODE")) {
-				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation");
+				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation on OPCODE");
 				err.setDatagramPacket(serverAddress, serverPort);
 				
 				try {
@@ -168,7 +168,7 @@ public class ClientWR extends Client {
 				return null;
 			}
 			else if(e.getMessage().equals("BNUMBER")) {
-				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation");
+				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation on Block Number");
 				err.setDatagramPacket(serverAddress, serverPort);
 				
 				try {

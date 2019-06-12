@@ -20,7 +20,7 @@ public class Client {
 	protected static final boolean VERBOSE = true;
 	protected static final String PATH = "C:\\Jose\\Java\\files\\";
 	protected static final int MAX_CAPACITY = 512;
-	protected static final int SERVER_PORT = 69;
+	protected static final int SERVER_PORT = 29;
 
 	protected int serverPort;
 	//used to check for error 5, this is set as soon as the server responds and remains constant
