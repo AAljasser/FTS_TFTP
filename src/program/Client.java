@@ -48,6 +48,7 @@ public class Client {
 	}
 
 	public void sendReceive() {
+		System.out.println("CLIENT");
 		System.out.println("type 1 to do a quick test, type something else to test a particular case");
 		testMode = (scanner.nextLine().equals("1")) ?  true : false;
 		if(testMode) test();
@@ -85,6 +86,7 @@ public class Client {
 			else System.out.println("Ending client wrong command");
 			System.exit(1);
 			scanner.close();
+			parameters.closeScanner();
 		}
 	}
 
@@ -184,7 +186,7 @@ public class Client {
 		
 		for(int f = 	0; f < files.length; f++) {
 			
-			for(int i =14; i < 28; i++) {		//28 non I/O possibles cases
+			for(int i = 0; i < 28; i++) {		//28 non I/O possibles cases
 				reset();
 				if(i < 14) { //14 are on read / 14 are on write
 					parameters.setRequestType(1); //readRequest			

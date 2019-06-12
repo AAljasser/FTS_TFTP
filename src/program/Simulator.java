@@ -41,6 +41,7 @@ public class Simulator {
 	private int lengthSent;
 	private Scanner scanner = new Scanner(System.in);
 	private boolean endByError;
+	private boolean isIOError;
 	
 	private InetAddress clientAddress, serverAddress;
 	
@@ -73,6 +74,7 @@ public class Simulator {
 	}	
 	
 	public void listen() {
+		System.out.println("SIMULATOR");
 		System.out.println("type 1 to do a quick test, type something else to test a particular case");
 		testMode = (scanner.nextLine().equals("1")) ?  true : false;
 		
@@ -112,6 +114,7 @@ public class Simulator {
 		if(clientSocket != null) clientSocket.close();
 		if(serverSocket != null) serverSocket.close();
 	
+		isIOError = false;
 		endByError = false;
 		serverAddress = SERVER_ADDRESS;
 		serverPort = SERVER_PORT;		
@@ -159,13 +162,9 @@ public class Simulator {
 			System.out.println("got packet from client - send packet to server");
 			
 			
-			if(endByError) {
+			if(endByError || transferEnded) {
 				break;
 			}
-			if(transferEnded) {
-				break;
-			}
-			
 			
 			//first parameter is used to identify if we are responding to a request
 			//second parameter is used to identify if we want to lose a dataPacket on read
@@ -233,6 +232,11 @@ public class Simulator {
 				String type = (isWrite) ? "Datapacket " : "ACKPacket ";
 				//if(VERBOSE) System.out.println("sending " + type + "#" + pNumber.getInt() + " to server" );
 				sendPacket(receivePacket, serverSocket, serverAddress, serverPort);
+				checkForIOError();
+				if(isIOError) {
+					endByError = true;
+					return false;
+				}
 				if(isWrite) lengthSent = receivePacket.getLength();
 				blockSent = pNumber.getInt();
 				conectionOk = true;
@@ -280,6 +284,11 @@ public class Simulator {
 				String type = (isWrite) ? "ACKPacket " : "Datapacket";
 				//if(VERBOSE) System.out.println("sending " + type + "#" + pNumber.getInt() + " to client" );
 				sendPacket(receivePacket, clientSocket, clientAddress, clientPort);
+				checkForIOError();
+				if(isIOError) {
+					endByError = true;
+					return;
+				}
 				if(isRead) lengthSent = receivePacket.getLength();
 				blockReceived = pNumber.getInt();
 				// how to end transmission?
@@ -515,16 +524,30 @@ public class Simulator {
 		
 	}
 	
-	public void test() {
+	private void checkForIOError() {
+		byte[] temp = Arrays.copyOfRange(receivePacket.getData(), 0, 2);
+		
+		byte[] errorCode = Arrays.copyOfRange(receivePacket.getData(), 2, 4);
+		
+		BlockNum bNum = new BlockNum(errorCode);
+		
+		if(temp[0] == 0 && temp[1] == 5 && bNum.getInt() != 4 && bNum.getInt() != 5) {
+			isIOError = true;
+		}
+	}
+	
+	
+	private void test() {
 		int[] requesType = { 1, 2 };
-		int[] operations = { 0, 1, 2, 3, 4, 5, 6 };
 		int[] packets = { 1, 2 };
+		int[] operations = { 0, 1, 2, 3, 4, 5, 6 };
+		
 
-		for (int r = 2; r <= requesType.length; r++) {
+		for (int r = 1; r <= requesType.length; r++) {
 
-			for (int p = 2; p <=packets.length; p++) {
+			for (int p = 1; p <=packets.length; p++) {
 				
-				for (int op = 6; op < operations.length; op++) {
+				for (int op = 0; op < operations.length; op++) {
 
 					reset();
 					parameters.setOperation(op);
