@@ -200,15 +200,16 @@ public class Simulator {
 				byte[] temp = Arrays.copyOfRange(receivePacket.getData(), 2, 4);
 				pNumber = new BlockNum(temp);
 			}
-
-			if (messPacket && packetsToBeFailure.contains(pNumber.getInt()) && !packetsDone.contains(pNumber.getInt()))
+			boolean donothing = parameters.getOperationID() == 0;
+			
+			if (!donothing && messPacket && packetsToBeFailure.contains(pNumber.getInt()) && !packetsDone.contains(pNumber.getInt()))
 				doFailure(receivePacket, pNumber.getInt(), operationID, callerID);
 
 			// Step 2: send to server (if i == 0 send to port 69 otherwise send to the
 			// attending port)
 			if(endByError) return false;
 			
-			if (!packetFailure) {
+			if (!packetFailure || parameters.getOperationID() == 0) {
 				sendPacket(receivePacket, serverSocket, serverAddress, serverPort);
 				checkForErrorPacket();
 				if(isError) {
@@ -252,12 +253,14 @@ public class Simulator {
 			byte[] temp = Arrays.copyOfRange(receivePacket.getData(), 2, 4);
 			pNumber = new BlockNum(temp);
 
-			if (messPacket && packetsToBeFailure.contains(pNumber.getInt()) && !packetsDone.contains(pNumber.getInt()))
+			boolean donothing = parameters.getOperationID() == 0;
+			
+			if (!donothing && messPacket && packetsToBeFailure.contains(pNumber.getInt()) && !packetsDone.contains(pNumber.getInt()))
 				doFailure(receivePacket, pNumber.getInt(), operationID, callerID);
 
 			// step 4;
 			if(endByError) return;
-			if (!packetFailure) {
+			if (!packetFailure || parameters.getOperationID() == 0) {
 				sendPacket(receivePacket, clientSocket, clientAddress, clientPort);
 				checkForErrorPacket();
 				if(isError) {
