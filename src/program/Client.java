@@ -173,7 +173,7 @@ public class Client {
 			
 		}
 		
-		if(error.equals("OWErr")) {
+		else if(error.equals("OWErr")) {
 			System.out.println("File already exists and cannot overrite");
 			endClientTransfer("Ending client Error 6 (File already exists");
 		}
