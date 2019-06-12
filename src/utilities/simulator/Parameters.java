@@ -57,7 +57,7 @@ public class Parameters {
 	
 		System.out.println("Which operation you want to perfom?");
 		System.out.println("type: \0 for no operation \n1 for delay\n2 for duplicate\n3 for lose\n4 for op code error\n5 for blockNum error\n6 for id error");
-		operation = Operation.values()[scanner.nextInt() - 1];
+		operation = Operation.values()[scanner.nextInt()];
 		
 		System.out.println("What type of packets you want to affect?");
 		System.out.println("type:\n1 for DataPackets\n2 for ACKPackets");
