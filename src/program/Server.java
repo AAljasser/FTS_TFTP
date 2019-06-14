@@ -12,22 +12,24 @@ import utilities.packets.*;
 
 public class Server implements Runnable {
 	//Defaults
-	protected static String dir = "C:\\Users\\josefrancojimenez\\Desktop\\files\\server\\";
-	protected boolean verbose = true;
+	protected static String dir = "D:\\Users\\Abdullrhman Aljasser\\Documents\\GitHub\\FTS_TFTP\\files\\server\\";
+	protected boolean verbose;
 	protected DatagramSocket socket;
 	protected DatagramPacket packet;
 	protected InetAddress cAdd = null;
 	protected int cPort;
 	
 	
-	public Server(int port) {
+	public Server(int port, boolean t) {
+		this.verbose = t;
 		try {
 			this.socket = new DatagramSocket(port);
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
 	}
-	public Server(DatagramPacket p) {
+	public Server(DatagramPacket p, boolean t) {
+		this.verbose = t;
 		try {
 			this.socket = new DatagramSocket();
 		} catch (SocketException e) {
@@ -46,7 +48,7 @@ public class Server implements Runnable {
 		
 		while(true) {
 			 this.packet = new DatagramPacket(rData, 0, rData.length);
-			 System.out.println("Waiting for request at port 69.");
+			 if(verbose)System.out.println("Waiting for request at port 69.");
 			 try {
 				this.socket.receive(this.packet);
 			} catch (IOException e) {
@@ -57,12 +59,12 @@ public class Server implements Runnable {
 			int rInd2 = (int) rData[1];
 			 
 			 if(rInd1 == 0 && rInd2 == 1) {
-				 clientThread = new Thread(new ServerRR(this.packet),"Thread_"+counter);
+				 clientThread = new Thread(new ServerRR(this.packet,this.verbose),"Thread_"+counter);
 				 clientsT.put(counter, clientThread);
 				 clientThread.start();
 				 counter++;
 			 } else if (rInd1 == 0 && rInd2 == 2) {
-				 clientThread = new Thread(new ServerWR(this.packet),"Thread_"+counter);
+				 clientThread = new Thread(new ServerWR(this.packet,this.verbose),"Thread_"+counter);
 				 clientsT.put(counter, clientThread);
 				 clientThread.start();
 				 counter++;
@@ -84,7 +86,16 @@ public class Server implements Runnable {
 					}
 					break;
 			 } else {
-				 System.out.println("Invalid request, skiping...");
+				 ErrorPacket err = new ErrorPacket(4, "Invalid Request");
+				 err.setDatagramPacket(this.packet.getAddress(), this.packet.getPort());
+				 
+				 try {
+					this.socket.send(err.getDatagramPacket());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				 if(verbose) System.out.println("Received invalid request.");
 			 }
 			 
 			 
@@ -94,8 +105,26 @@ public class Server implements Runnable {
 	
 	
 	public static void main(String args[]) {
-		Thread serverThread = new Thread(new Server(69),"ServerThread");
-		serverThread.start();
+		Scanner ss = new Scanner(System.in);
+		System.out.println("Server Mode (Q: quite, P: print info)");
+		
+		String choice = ss.nextLine();
+		
+		while(!choice.toLowerCase().contains("q") && !choice.toLowerCase().contains("p")) {
+			System.out.println("Server Mode (Q: quite, P: print info)");
+			
+			choice = ss.nextLine();
+		}
+		
+		if(choice.toLowerCase().compareTo("q") == 0) {
+			Thread serverThread = new Thread(new Server(69,false),"ServerThread");
+			serverThread.start();
+		} else {
+			Thread serverThread = new Thread(new Server(69,true),"ServerThread");
+			serverThread.start();
+		}
+		
+		
 		
 		Object[] options = {"Quit"};
 		JOptionPane.showOptionDialog(null,

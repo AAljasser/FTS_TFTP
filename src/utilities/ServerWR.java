@@ -31,8 +31,8 @@ public class ServerWR extends Server {
 	private boolean err = false;
 	
 
-	public ServerWR(DatagramPacket p) {
-		super(p);
+	public ServerWR(DatagramPacket p, boolean t) {
+		super(p,t);
 		RequestPacket temp = null;
 		try {
 			temp = new RequestPacket(p.getData(), p.getLength());
@@ -125,10 +125,10 @@ public class ServerWR extends Server {
 				e.printStackTrace();
 			}
 			
-			System.out.println("Error 6: File Already Exists");
+			//System.out.println("Error 6: File Already Exists");
 			this.err = true;
 		}
-		
+		if(!this.err) {
 		try {
 			this.loadedChannel = FileChannel.open(this.loadedFile.toPath(),StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
 			
@@ -164,8 +164,9 @@ public class ServerWR extends Server {
 			
 			
 			System.out.println("Error 2: Access violation");
+			this.err = true;
 			//TODO Create Error Packet
-		}
+		}}
 	}
 	
 	@Override
@@ -237,11 +238,7 @@ public class ServerWR extends Server {
 					E.setDatagramPacket(this.packet.getAddress(), this.packet.getPort());
 					
 					this.socket.send(E.getDatagramPacket());
-				}
-				
-				
-				
-				if(bNum+1 == this.dPack.getIntBN()) {
+				} else if(bNum+1 == this.dPack.getIntBN()) {
 					ByteBuffer saving = ByteBuffer.wrap(this.dPack.getData());
 					
 					
@@ -271,6 +268,7 @@ public class ServerWR extends Server {
 						}
 					}
 				}
+				
 				tNum=0;
 				
 				
@@ -294,10 +292,11 @@ public class ServerWR extends Server {
 			
 		}
 		try {
+			if(this.loadedChannel.isOpen())
 			this.loadedChannel.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
