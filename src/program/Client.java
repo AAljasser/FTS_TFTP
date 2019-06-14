@@ -17,8 +17,8 @@ import utilities.packets.*;
 
 public class Client {
 	
-	protected static final String PATH = "C:\\Jose\\Java\\files\\";
-	protected static final boolean VERBOSE = true;	
+	protected static final String PATH = "C:\\Users\\josefrancojimenez\\Desktop\\files\\";
+
 	protected static final int MAX_CAPACITY = 512;
 	protected static final int SERVER_PORT = 69;
 	protected static final int SIMULATOR_PORT = 29;
@@ -31,7 +31,7 @@ public class Client {
 	protected boolean transmissionEnd;
 	
 	private String filename;
-	private String mode;
+	private boolean verbose;
 	private String hostName;
 	private Request request;
 	private Scanner scanner = new Scanner(System.in);
@@ -56,12 +56,12 @@ public class Client {
 		
 		reset();
 
-		RequestPacket RPacket = new RequestPacket(request, filename, mode);
+		RequestPacket RPacket = new RequestPacket(request, filename, "octet");
 
 		if (request.getType().equalsIgnoreCase("read")) {
-			new ClientRR(RPacket, serverAddress, serverPort);
+			new ClientRR(RPacket, serverAddress, serverPort, verbose);
 		} else if (request.getType().equalsIgnoreCase("write")) {
-			new ClientWR(RPacket, serverAddress, serverPort);
+			new ClientWR(RPacket, serverAddress, serverPort, verbose);
 		} else
 			System.out.println("Could not contact server");
 	
@@ -118,8 +118,10 @@ public class Client {
 		System.out.println("Enter filename (including its extension): ");
 		filename = scanner.nextLine();
 		
-		System.out.println("Enter the mode");
-		mode = scanner.nextLine();
+		System.out.println("Type 1 for verbose mode, anything else for quiet mode");
+		String tempVerbose = scanner.nextLine();
+		
+		verbose = (tempVerbose.equals("1")) ? true : false;
 		
 		System.out.println("MAKE SURE SERVER IS RUNNING AND LISTENING ON PORT 69");
 		System.out.println("IF WANT TO USE SIMULATOR MAKE SURE IT IS RUNNING AND LISTENING ON PORT 29");
@@ -213,7 +215,7 @@ public class Client {
 		
 		for(int f = 	0; f < files.length; f++) {
 			
-			for(int i = 0; i < 28; i++) {		//28 non I/O possibles cases
+			for(int i = 26; i < 28; i++) {		//28 non I/O possibles cases
 				if(serverAddress == null) setServerAddress();				
 				
 				if(i < 14) { //14 are on read / 14 are on write
@@ -224,12 +226,12 @@ public class Client {
 				}
 				
 				filename = files[f];
-				mode = "octet";
+				verbose = false;
 				
 				System.out.println("\nPARAMETERS ARE SET TO DO: ");
 				System.out.println(tempRequest + " Request ");
 				System.out.println(filename + " filename ");
-				System.out.println(mode + " mode ");
+				System.out.println(verbose + " mode ");
 				
 				System.out.println("Press a enter to continue (MAKE SURE SIMULATOR IS READY)\n");
 				scanner.nextLine();
@@ -238,12 +240,12 @@ public class Client {
 				
 				reset();
 				
-				RequestPacket RPacket = new RequestPacket(request , filename, mode);
+				RequestPacket RPacket = new RequestPacket(request , filename, "octet");
 		
 				if (request.getType().equalsIgnoreCase("read")) {
-					new ClientRR(RPacket, serverAddress, port);
+					new ClientRR(RPacket, serverAddress, port, verbose);
 				} else if (request.getType().equalsIgnoreCase("write")) {
-					new ClientWR(RPacket, serverAddress, port);
+					new ClientWR(RPacket, serverAddress, port, verbose);
 				} else
 					System.out.println("Could not contact server");
 				
@@ -259,9 +261,9 @@ public class Client {
 	 */
 	public static void main(String args[]) {
 		Client client = new Client();
-		client.sendReceive();
+		//client.sendReceive();
 		
-		//client.test();
+		client.test();
 	}
 
 }

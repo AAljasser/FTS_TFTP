@@ -18,9 +18,11 @@ public class ClientWR extends Client {
 	private FILEUtil file;
 	private byte[][] data;
 	private DataPacket dataPacket = null;
+	private boolean VERBOSE;
 	
-	public ClientWR(RequestPacket requestPacket, InetAddress address, int port) {
+	public ClientWR(RequestPacket requestPacket, InetAddress address, int port, boolean verb) {
 
+		VERBOSE = verb;
 		serverAddress = address;
 		this.requestPacket = requestPacket;
 		
@@ -102,7 +104,7 @@ public class ClientWR extends Client {
 
 			dataPacket = new DataPacket(i , data[i - 1]);
 			dataPacket.setDatagramPacket(serverAddress, serverPort);
-			System.out.println("");
+			if(VERBOSE) System.out.println("");
 			
 			//send DATA (no need to check for error here)
 			try {
@@ -188,7 +190,7 @@ public class ClientWR extends Client {
 			System.out.println("Error Code:"+ temp.getErrorPacket().getIntBN() + " " + temp.getErrorPacket().getMsg());
 			
 			String msg = (temp.getErrorPacket().getMsg().isEmpty()) ? "" : "(" + temp.getErrorPacket().getMsg() +" )";
-			endClientTransfer("Ending client ERROR 4 " +" " + msg);
+			endClientTransfer("Ending client ERROR:" +  temp.getErrorPacket().getIntBN() + " "  + msg);
 			return null;
 		}
 		

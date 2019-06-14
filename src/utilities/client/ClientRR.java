@@ -16,10 +16,13 @@ import program.*;
 public class ClientRR extends Client {
 
 	RequestPacket requestPacket;
+	private boolean VERBOSE;
 
-	public ClientRR(RequestPacket requestPacket, InetAddress address, int port) {
+	public ClientRR(RequestPacket requestPacket, InetAddress address, int port, boolean verb) {
 		
 		serverAddress = address;
+		VERBOSE = verb;
+		
 		try {
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e1) {
@@ -156,7 +159,7 @@ public class ClientRR extends Client {
 			System.out.println("Error Code:"+ temp.getErrorPacket().getIntBN()+ " " +  temp.getErrorPacket().getMsg());
 			
 			String msg = (temp.getErrorPacket().getMsg().isEmpty()) ? "" : "(" + temp.getErrorPacket().getMsg() +" )";
-			endClientTransfer("Ending client ERROR 4 " +" " + msg );
+			endClientTransfer("Ending client ERROR:" +  temp.getErrorPacket().getIntBN() + " "  + msg);
 			return null;
 		}
 		
