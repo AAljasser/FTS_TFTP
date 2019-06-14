@@ -6,6 +6,7 @@ import utilities.packets.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
@@ -15,15 +16,20 @@ import program.*;
 public class ClientRR extends Client {
 
 	RequestPacket requestPacket;
+	private boolean VERBOSE;
 
-	public ClientRR(RequestPacket requestPacket) {
+	public ClientRR(RequestPacket requestPacket, InetAddress address, int port, boolean verb) {
+		
+		serverAddress = address;
+		VERBOSE = verb;
+		
 		try {
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		serverPort = SERVER_PORT;
+		serverPort = port;
 		this.requestPacket = requestPacket;
 		transfer();
 	}
@@ -35,8 +41,8 @@ public class ClientRR extends Client {
 		try {
 			sendReceiveSocket.send( this.requestPacket.getDatagramPacket());
 		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
+			System.out.println("Bad Address : Network is unreachable, ending client now...");
+			System.exit(1);
 		}
 
 		boolean is512 = true;
@@ -120,7 +126,7 @@ public class ClientRR extends Client {
 			
 		} catch (Exception e) {
 			if(e.getMessage().equals("OPCODE")) {
-				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation on OPCODE");
+				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation OPCODE");
 				err.setDatagramPacket(serverAddress, serverPort);
 				
 				try {
@@ -135,7 +141,7 @@ public class ClientRR extends Client {
 				return null;
 			}
 			else if(e.getMessage().equals("BNUMBER")) {
-				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation on Block Number");
+				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation BLOCKNUMBER");
 				err.setDatagramPacket(serverAddress, serverPort);
 				
 				try {
@@ -153,7 +159,7 @@ public class ClientRR extends Client {
 			System.out.println("Error Code:"+ temp.getErrorPacket().getIntBN()+ " " +  temp.getErrorPacket().getMsg());
 			
 			String msg = (temp.getErrorPacket().getMsg().isEmpty()) ? "" : "(" + temp.getErrorPacket().getMsg() +" )";
-			endClientTransfer("Ending client ERROR 4 " +" " + msg );
+			endClientTransfer("Ending client ERROR:" +  temp.getErrorPacket().getIntBN() + " "  + msg);
 			return null;
 		}
 		

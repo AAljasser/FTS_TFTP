@@ -18,9 +18,12 @@ public class ClientWR extends Client {
 	private FILEUtil file;
 	private byte[][] data;
 	private DataPacket dataPacket = null;
+	private boolean VERBOSE;
 	
-	public ClientWR(RequestPacket requestPacket) {
+	public ClientWR(RequestPacket requestPacket, InetAddress address, int port, boolean verb) {
 
+		VERBOSE = verb;
+		serverAddress = address;
 		this.requestPacket = requestPacket;
 		
 		try {
@@ -29,7 +32,7 @@ public class ClientWR extends Client {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		serverPort = SERVER_PORT;
+		serverPort = port;
 
 		try {
 			file = new FILEUtil(PATH + requestPacket.getFilename());
@@ -39,7 +42,7 @@ public class ClientWR extends Client {
 			checkIOErrors(error);			
 		}
 
-		
+	
 		if(!transmissionEnd) transfer();
 	}
 	
@@ -56,8 +59,8 @@ public class ClientWR extends Client {
 			try {
 				sendReceiveSocket.send(requestPacket.getDatagramPacket());
 			} catch (IOException e3) {
-				// TODO Auto-generated catch block
-				e3.printStackTrace();
+				System.out.println("Bad Address : Network is unreachable, ending client now...");
+				System.exit(1);
 			}
 
 			DatagramPacket dp = new DatagramPacket(new byte[512], 512);
@@ -101,7 +104,7 @@ public class ClientWR extends Client {
 
 			dataPacket = new DataPacket(i , data[i - 1]);
 			dataPacket.setDatagramPacket(serverAddress, serverPort);
-			System.out.println("");
+			if(VERBOSE) System.out.println("");
 			
 			//send DATA (no need to check for error here)
 			try {
@@ -154,7 +157,7 @@ public class ClientWR extends Client {
 		} catch (Exception e) {
 			
 			if(e.getMessage().equals("OPCODE")) {
-				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation on OPCODE");
+				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation OPCODE");
 				err.setDatagramPacket(serverAddress, serverPort);
 				
 				try {
@@ -169,7 +172,7 @@ public class ClientWR extends Client {
 				return null;
 			}
 			else if(e.getMessage().equals("BNUMBER")) {
-				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation on Block Number");
+				ErrorPacket err = new ErrorPacket(4, "illegal TFTP operation BLOCKNUMBER");
 				err.setDatagramPacket(serverAddress, serverPort);
 				
 				try {
@@ -187,7 +190,7 @@ public class ClientWR extends Client {
 			System.out.println("Error Code:"+ temp.getErrorPacket().getIntBN() + " " + temp.getErrorPacket().getMsg());
 			
 			String msg = (temp.getErrorPacket().getMsg().isEmpty()) ? "" : "(" + temp.getErrorPacket().getMsg() +" )";
-			endClientTransfer("Ending client ERROR 4 " +" " + msg);
+			endClientTransfer("Ending client ERROR:" +  temp.getErrorPacket().getIntBN() + " "  + msg);
 			return null;
 		}
 		

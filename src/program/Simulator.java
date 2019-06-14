@@ -1,5 +1,6 @@
 package program;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -17,6 +18,7 @@ import utilities.simulator.Parameters;
 
 public class Simulator {
 	
+	//private static final boolean VERBOSE = true;
 	private static final int MAX_CAPACITY = 512;
 	private static final int SIMULATOR_PORT = 29;
 	private  InetAddress SERVER_ADDRESS =null;
@@ -36,7 +38,8 @@ public class Simulator {
 	private int lengthSent;
 	private Scanner scanner = new Scanner(System.in);
 	private boolean endByError;
-	private boolean isError;
+	private boolean isIOError;
+	private String hostName;
 	
 	private InetAddress clientAddress, serverAddress;
 	
@@ -48,10 +51,15 @@ public class Simulator {
 	
 	//constructor
 	public Simulator() {
+		System.out.println("SIMULATOR");
 		//for it5 change the server Address here
 		serverPort = SERVER_PORT;
+		System.out.println("Enter the server address or type 1 for local host");
+		hostName = scanner.nextLine();
+		
+		
 		try {
-			SERVER_ADDRESS = InetAddress.getLocalHost();
+			SERVER_ADDRESS = (hostName.equals("1")) ? InetAddress.getLocalHost() : InetAddress.getByName(hostName);
 		} catch (UnknownHostException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -66,41 +74,46 @@ public class Simulator {
 			e.printStackTrace();
 		}
 		
+		
+		
 	}	
 	
 	public void listen() {
-		int shutdown = -1;
+			
+			String shutdown = null;
+					
+			do {
+				reset();
+				parameters.getInfo();	
 				
-		do {
-			reset();
-			parameters.getInfo();	
-			
-			loseDataPacket = (parameters.getPacketTypeID() == 1) ? true : false;
-			
-			saveFaileurePackets(parameters.getFrom(), parameters.getTo());
-			
-			transfer();
-			
-			System.out.println("\n");
-			System.out.println("Transfer ended.");		
-			System.out.println("\nType 1 to continue with another tranfer, type  0 to end");
-			shutdown = scanner.nextInt();
-			}while(shutdown == -1 ||shutdown == 1);
-			
-			if(shutdown == 0) System.out.println("Ending simulator");
-			else System.out.println("wrong command, ending simulator");
-			
-			scanner.close();
-			clientSocket.close();
-			serverSocket.close();
+				loseDataPacket = (parameters.getPacketTypeID() == 1) ? true : false;
+				
+				saveFaileurePackets(parameters.getFrom(), parameters.getTo());
+				
+				transfer();
+				
+				System.out.println("\n");
+				System.out.println("Transfer ended.");		
+				System.out.println("\nType 1 to continue with another tranfer, type  0 to end");
+				shutdown = scanner.nextLine();
+				}while(shutdown == null ||shutdown.equals("1")); 
+				
+				if(shutdown.equals("0")) System.out.println("Ending simulator");
+				else System.out.println("wrong command, ending simulator");
+				
+				scanner.close();
+				clientSocket.close();
+				serverSocket.close();
+				parameters.closeScanner();
 	}
+	
 	
 
 	public void reset() {
 		if(clientSocket != null) clientSocket.close();
 		if(serverSocket != null) serverSocket.close();
 	
-		isError = false;
+		isIOError = false;
 		endByError = false;
 		serverAddress = SERVER_ADDRESS;
 		serverPort = SERVER_PORT;		
@@ -141,17 +154,23 @@ public class Simulator {
 		boolean temp = false;
 		while(!transferEnded) {
 					
-
+			
 			//first parameter is used to identify if we are sending the request
 			//second parameter is used to identify if we want to lose a dataPacket on write
 			temp = fromClientToServerData(i, (isWrite && loseDataPacket) || (isRead && !loseDataPacket),  lengthSent < MAX_CAPACITY);
-		
-			if(endByError) break;
-			if(transferEnded) break;
+			//System.out.println("got packet from client - send packet to server");
+			
+			
+			if(endByError || transferEnded) {
+				break;
+			}
+			
 			//first parameter is used to identify if we are responding to a request
 			//second parameter is used to identify if we want to lose a dataPacket on read
 			fromServerToClientData(i, (isRead && loseDataPacket) || (isWrite && !loseDataPacket),  lengthSent < MAX_CAPACITY); 
+			//System.out.println("got packet from server - send packet to client");
 			
+			//if(VERBOSE) System.out.println("");
 			if(endByError) break;
 			
 			i++;
@@ -200,19 +219,20 @@ public class Simulator {
 				byte[] temp = Arrays.copyOfRange(receivePacket.getData(), 2, 4);
 				pNumber = new BlockNum(temp);
 			}
-			boolean donothing = parameters.getOperationID() == 0;
-			
-			if (!donothing && messPacket && packetsToBeFailure.contains(pNumber.getInt()) && !packetsDone.contains(pNumber.getInt()))
+
+			boolean op0 = parameters.getOperationID() == 0;
+			if (! op0 && messPacket && packetsToBeFailure.contains(pNumber.getInt()) && !packetsDone.contains(pNumber.getInt()))
 				doFailure(receivePacket, pNumber.getInt(), operationID, callerID);
 
 			// Step 2: send to server (if i == 0 send to port 69 otherwise send to the
 			// attending port)
 			if(endByError) return false;
-			
-			if (!packetFailure || parameters.getOperationID() == 0) {
+			if (!packetFailure) {
+				String type = (isWrite) ? "Datapacket " : "ACKPacket ";
+				//if(VERBOSE) System.out.println("sending " + type + "#" + pNumber.getInt() + " to server" );
 				sendPacket(receivePacket, serverSocket, serverAddress, serverPort);
-				checkForErrorPacket();
-				if(isError) {
+				checkForIOError();
+				if(isIOError) {
 					endByError = true;
 					return false;
 				}
@@ -253,17 +273,18 @@ public class Simulator {
 			byte[] temp = Arrays.copyOfRange(receivePacket.getData(), 2, 4);
 			pNumber = new BlockNum(temp);
 
-			boolean donothing = parameters.getOperationID() == 0;
-			
-			if (!donothing && messPacket && packetsToBeFailure.contains(pNumber.getInt()) && !packetsDone.contains(pNumber.getInt()))
+			boolean op0 = parameters.getOperationID() == 0;
+			if (!op0 && messPacket && packetsToBeFailure.contains(pNumber.getInt()) && !packetsDone.contains(pNumber.getInt()))
 				doFailure(receivePacket, pNumber.getInt(), operationID, callerID);
 
 			// step 4;
 			if(endByError) return;
-			if (!packetFailure || parameters.getOperationID() == 0) {
+			if (!packetFailure) {
+				String type = (isWrite) ? "ACKPacket " : "Datapacket";
+				//if(VERBOSE) System.out.println("sending " + type + "#" + pNumber.getInt() + " to client" );
 				sendPacket(receivePacket, clientSocket, clientAddress, clientPort);
-				checkForErrorPacket();
-				if(isError) {
+				checkForIOError();
+				if(isIOError) {
 					endByError = true;
 					return;
 				}
@@ -281,14 +302,12 @@ public class Simulator {
 	}
 	
 	
-	public void failOnACKPackets() {
-		
-	}
 	//returns true if packet was 
 	private void doFailure(DatagramPacket dp, int packetNumber, int operationID, int callerID) {
-		//System.out.println("Losing on "+ callerID +" side...");	
-	
-	    if(operationID == 1) delayPacket(dp, callerID, packetNumber);
+		
+		//System.out.println(operationID);
+		//System.out.println("Losing on "+ callerID +" side...");				
+		if(operationID == 1) delayPacket(dp, callerID, packetNumber);
 		else if (operationID == 2) duplicatePacket(dp, callerID, packetNumber);
 		else if (operationID == 3) losePacket(dp, packetNumber);
 		else if (operationID == 4) error4OpCode(dp, packetNumber, callerID);
@@ -319,8 +338,8 @@ public class Simulator {
 		try {
 			socket.send(sendPacket);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Bad Address : Network is unreachable, ending client now...");
+			System.exit(1);
 		}
 	}
 	
@@ -333,8 +352,6 @@ public class Simulator {
 			packetsToBeFailure.add(i);
 		}
 	}
-	
-	
 	
 	
 	//TODO: should we pass the delay?
@@ -385,9 +402,7 @@ public class Simulator {
 	
 	//TODO : should we pass the new port?
 	private void error5(DatagramPacket dp, int pNumber, int callerID) {
-		
-		
-		
+				
 		DatagramSocket temp = null;
 		try {
 			 temp = new DatagramSocket(28);
@@ -397,11 +412,14 @@ public class Simulator {
 		}
 		
 		if(callerID == 1) {
-						
+					
+			System.out.println("Send to server through a bad device...");
 			sendPacket(dp, temp, serverAddress, serverPort);
 			
+			System.out.println("waiting for response on bad device...");
 			receivePacket(temp);
-						
+					
+			System.out.println("sending to server on original socket... ");
 			sendPacket(dp, serverSocket, serverAddress, serverPort);
 			
 			
@@ -464,15 +482,6 @@ public class Simulator {
 		System.out.println("END BY ERROR 4 ON OPCODE");
 		
 	}
-	
-	public void checkForErrorPacket() {
-		byte[] temp = Arrays.copyOfRange(receivePacket.getData(), 0, 2);
-		
-		if(temp[0] == 0 && temp[1] == 5) {
-			isError = true;
-		}
-		
-	}
 
 	
 	//TODO : should we pass the offset?
@@ -514,10 +523,76 @@ public class Simulator {
 		
 	}
 	
+	private void checkForIOError() {
+		byte[] temp = Arrays.copyOfRange(receivePacket.getData(), 0, 2);
+		
+		byte[] errorCode = Arrays.copyOfRange(receivePacket.getData(), 2, 4);
+		
+		BlockNum bNum = new BlockNum(errorCode);
+		
+		if(temp[0] == 0 && temp[1] == 5 && bNum.getInt() != 4 && bNum.getInt() != 5) {
+			isIOError = true;
+		}
+	}
+	
+	
+	private void test() {
+		int[] requesType = { 1, 2 };
+		int[] packets = { 1, 2 };
+		int[] operations = { 0, 1, 2, 3, 4, 5, 6 };
+		
+
+		for (int r = 2; r <= requesType.length; r++) {
+
+			for (int p = 2; p <=packets.length; p++) {
+				
+				for (int op = 6; op < operations.length; op++) {
+
+					reset();
+					parameters.setOperation(op);
+					parameters.setPacket(p);
+					if (op != 4 && op != 5) {
+						parameters.setFrom(10);
+						parameters.setTo(20);
+					} else {
+						parameters.setFrom(10);
+						parameters.setTo(10);
+					}
+					
+					loseDataPacket = (parameters.getPacketTypeID() == 1) ? true : false;
+					
+					saveFaileurePackets(parameters.getFrom(), parameters.getTo());
+
+					System.out.println("PARAMETERS ARE SET TO:");
+					System.out.println("operation :" + parameters.getOperationName());
+					System.out.println("operation :" + parameters.getOperationID());
+					System.out.println("packet to manipulate :" + parameters.getPacketName());
+					System.out.println("From :" + parameters.getFrom());
+					System.out.println("To :" + parameters.getTo());
+
+					System.out.println("Press enter (MAKE SURE SERVER IS READY)\n");
+					scanner.nextLine();
+
+					transfer();
+
+					System.out.println("\n");
+					System.out.println("Transfer ended.");
+				}
+
+			}
+		}
+		scanner.close();
+		clientSocket.close();
+		serverSocket.close();
+		parameters.closeScanner();
+	}
+	
 	public static void main(String args[]) {
 		Simulator simulator = new Simulator();
 		
-		simulator.listen();
+		//simulator.listen();
+		
+		simulator.test();
 	}
 
 }
