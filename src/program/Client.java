@@ -17,7 +17,7 @@ import utilities.packets.*;
 
 public class Client {
 	
-	protected static final String PATH = "C:\\Users\\josefrancojimenez\\Desktop\\files\\";
+	protected static final String PATH = "D:\\Users\\Abdullrhman Aljasser\\Documents\\GitHub\\FTS_TFTP\\files\\";
 
 	protected static final int MAX_CAPACITY = 512;
 	protected static final int SERVER_PORT = 69;
@@ -261,9 +261,9 @@ public class Client {
 	 */
 	public static void main(String args[]) {
 		Client client = new Client();
-		//client.sendReceive();
+		client.sendReceive();
 		
-		client.test();
+		//client.test();
 	}
 
 }

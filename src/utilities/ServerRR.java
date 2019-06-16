@@ -22,8 +22,8 @@ public class ServerRR extends Server {
 	private ACKPacket aPack;
 	private boolean err = false;
 
-	public ServerRR(DatagramPacket p) {
-		super(p);
+	public ServerRR(DatagramPacket p, boolean t) {
+		super(p,t);
 		// TODO Auto-generated constructor stub
 		RequestPacket temp = null;
 		try {
@@ -59,7 +59,7 @@ public class ServerRR extends Server {
 		
 		FileChannel check = null;
 		File s = new File(dir+this.fileName);
-		System.out.println(dir+this.fileName);
+		//System.out.println(dir+this.fileName);
 		
 		try {
 			check= FileChannel.open(s.toPath(),StandardOpenOption.WRITE,StandardOpenOption.READ);

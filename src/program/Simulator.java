@@ -590,9 +590,9 @@ public class Simulator {
 	public static void main(String args[]) {
 		Simulator simulator = new Simulator();
 		
-		//simulator.listen();
+		simulator.listen();
 		
-		simulator.test();
+		//simulator.test();
 	}
 
 }
